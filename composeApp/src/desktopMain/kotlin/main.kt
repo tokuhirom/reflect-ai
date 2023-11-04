@@ -11,11 +11,11 @@ fun main() = application {
         .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
         .registerModule(JavaTimeModule())
     val chatLogRepository = ChatLogRepository(objectMapper, ZoneId.systemDefault())
-    val chatGPTService = ChatGPTService(apiKey,
-        "You are a assistant to help the Java/Kotlin developers and/or engineering manager." +
-                "あなたはチャットの一参加者なのではあなたは明示的に質問された場合ととても良いアドバイスが思いついた場合以外は返答する必要はありません" +
-                "どちらでもない場合は *nods* とだけ答えてください。" +
-                "The developer prefers Japanese. You must answer in Japanese.")
+    val prompt = "You are a assistant to help the Java/Kotlin developers." +
+//            "あなたはチャットの一参加者なのではあなたは明示的に質問された場合ととても良いアドバイスが思いついた場合以外は返答する必要はありません" +
+//            "どちらでもない場合は *nods* とだけ答えてください。" +
+            "The developer prefers Japanese. You must answer in Japanese."
+    val chatGPTService = ChatGPTService(apiKey, prompt)
 
     Window(onCloseRequest = ::exitApplication, title = "ReflectAI") {
         App(chatGPTService, chatLogRepository)
