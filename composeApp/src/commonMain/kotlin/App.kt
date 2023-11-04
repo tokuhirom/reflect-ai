@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
@@ -28,6 +29,10 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.isMetaPressed
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.aallam.openai.api.exception.InvalidRequestException
 import io.ktor.client.plugins.*
@@ -38,6 +43,7 @@ import kotlinx.datetime.minus
 import model.ChatLog
 import model.ChatLogMessage
 import model.ChatLogRole
+import org.slf4j.LoggerFactory
 import javax.swing.JOptionPane
 
 
@@ -49,6 +55,7 @@ fun showAlert(message: String) {
 
 @Composable
 fun App(chatGPTService: ChatGPTService, chatLogRepository: ChatLogRepository) {
+    val logger = LoggerFactory.getLogger("App")
     val initialConversation = chatLogRepository.loadConversations().logs
 
     MaterialTheme {
@@ -93,8 +100,44 @@ fun App(chatGPTService: ChatGPTService, chatLogRepository: ChatLogRepository) {
                             )
                             .padding(8.dp)
                     ) {
+                        // https://stackoverflow.com/questions/65567412/jetpack-compose-text-hyperlink-some-section-of-the-text
+                        // https://developer.android.com/jetpack/compose/text?hl=ja
+                        val annotatedText = buildAnnotatedString {
+                            append("Click ")
+
+                            // We attach this *URL* annotation to the following content
+                            // until `pop()` is called
+                            pushStringAnnotation(tag = "URL",
+                                annotation = "https://developer.android.com")
+                            withStyle(style = SpanStyle(color = Color.Blue,
+                                fontWeight = FontWeight.Bold)
+                            ) {
+                                append("here")
+                            }
+
+                            append(item.message)
+
+                            pop()
+                        }
+
+                        // TODO https://github.com/JetBrains/compose-multiplatform/issues/1450
                         SelectionContainer {
-                            Text(text = item.message, modifier = Modifier.padding(8.dp))
+                            ClickableText(
+                                text = annotatedText,
+                                modifier = Modifier.padding(8.dp),
+                                onClick = { offset ->
+                                    // We check if there is an *URL* annotation attached to the text
+                                    // at the clicked position
+                                    println("OFFSET: $offset")
+                                    annotatedText.getStringAnnotations(tag = "URL", start = offset,
+                                        end = offset)
+                                        .firstOrNull()?.let { annotation ->
+                                            // If yes, we log its value
+                                            println("OK~: $offset")
+                                            logger.info("Clicked URL: {}", annotation.item)
+                                        }
+                                }
+                            )
                         }
                     }
                     Spacer(modifier = Modifier.height(1.dp).fillMaxWidth().background(Color.Gray))

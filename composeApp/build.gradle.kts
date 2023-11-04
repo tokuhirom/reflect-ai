@@ -21,6 +21,7 @@ kotlin {
                 implementation(compose.desktop.currentOs)
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.7.2")
                 implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.3")
+//                implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
             }
         }
         val commonMain by getting {
@@ -35,6 +36,7 @@ kotlin {
 
                 implementation("ch.qos.logback:logback-classic:1.4.11")
                 implementation("com.aallam.openai:openai-client:3.5.0")
+                implementation("com.aallam.ktoken:ktoken:0.3.0")
 
                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")
 
