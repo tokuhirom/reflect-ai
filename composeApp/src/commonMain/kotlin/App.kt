@@ -99,12 +99,9 @@ fun App(chatGPTService: ChatGPTService, chatLogRepository: ChatLogRepository) {
                                     ChatLogRole.AI -> Color.LightGray
                                 }
                             )
-                            .padding(8.dp)
+                            .padding(16.dp)
                     ) {
-                        SelectionContainer(
-                            modifier = Modifier.padding(16.dp)
-                                .layoutId("selectionContainer")
-                        ) {
+                        SelectionContainer {
                             RichText(
                                 modifier = Modifier.padding(16.dp)
                             ) {
