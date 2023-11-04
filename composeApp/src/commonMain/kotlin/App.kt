@@ -29,18 +29,19 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.isMetaPressed
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.aallam.openai.api.exception.InvalidRequestException
+import com.halilibo.richtext.markdown.Markdown
+import com.halilibo.richtext.ui.RichText
 import io.ktor.client.plugins.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.datetime.minus
-import model.ChatLog
 import model.ChatLogMessage
 import model.ChatLogRole
 import org.slf4j.LoggerFactory
@@ -100,44 +101,15 @@ fun App(chatGPTService: ChatGPTService, chatLogRepository: ChatLogRepository) {
                             )
                             .padding(8.dp)
                     ) {
-                        // https://stackoverflow.com/questions/65567412/jetpack-compose-text-hyperlink-some-section-of-the-text
-                        // https://developer.android.com/jetpack/compose/text?hl=ja
-                        val annotatedText = buildAnnotatedString {
-                            append("Click ")
-
-                            // We attach this *URL* annotation to the following content
-                            // until `pop()` is called
-                            pushStringAnnotation(tag = "URL",
-                                annotation = "https://developer.android.com")
-                            withStyle(style = SpanStyle(color = Color.Blue,
-                                fontWeight = FontWeight.Bold)
+                        SelectionContainer(
+                            modifier = Modifier.padding(16.dp)
+                                .layoutId("selectionContainer")
+                        ) {
+                            RichText(
+                                modifier = Modifier.padding(16.dp)
                             ) {
-                                append("here")
+                                Markdown(item.message)
                             }
-
-                            append(item.message)
-
-                            pop()
-                        }
-
-                        // TODO https://github.com/JetBrains/compose-multiplatform/issues/1450
-                        SelectionContainer {
-                            ClickableText(
-                                text = annotatedText,
-                                modifier = Modifier.padding(8.dp),
-                                onClick = { offset ->
-                                    // We check if there is an *URL* annotation attached to the text
-                                    // at the clicked position
-                                    println("OFFSET: $offset")
-                                    annotatedText.getStringAnnotations(tag = "URL", start = offset,
-                                        end = offset)
-                                        .firstOrNull()?.let { annotation ->
-                                            // If yes, we log its value
-                                            println("OK~: $offset")
-                                            logger.info("Clicked URL: {}", annotation.item)
-                                        }
-                                }
-                            )
                         }
                     }
                     Spacer(modifier = Modifier.height(1.dp).fillMaxWidth().background(Color.Gray))
