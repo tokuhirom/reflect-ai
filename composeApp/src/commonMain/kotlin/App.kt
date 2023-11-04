@@ -45,6 +45,7 @@ import kotlinx.coroutines.launch
 import model.ChatLogMessage
 import model.ChatLogRole
 import org.slf4j.LoggerFactory
+import java.time.ZoneId
 import javax.swing.JOptionPane
 
 
@@ -55,7 +56,7 @@ fun showAlert(message: String) {
 
 
 @Composable
-fun App(chatGPTService: ChatGPTService, chatLogRepository: ChatLogRepository) {
+fun App(chatGPTService: ChatGPTService, chatLogRepository: ChatLogRepository, zoneId: ZoneId) {
     val logger = LoggerFactory.getLogger("App")
     val initialConversation = chatLogRepository.loadConversations().logs
 
@@ -76,7 +77,7 @@ fun App(chatGPTService: ChatGPTService, chatLogRepository: ChatLogRepository) {
                             chatLogRepository.saveConversations(conversation)
                         }
                     } catch (e: InvalidRequestException) {
-                        showAlert("Error: ${e.message}")
+                        showAlert("Error!!: ${e.message}")
                         chatLogRepository.saveConversations(conversation)
                     }
                 }
@@ -101,11 +102,14 @@ fun App(chatGPTService: ChatGPTService, chatLogRepository: ChatLogRepository) {
                             )
                             .padding(16.dp)
                     ) {
-                        SelectionContainer {
-                            RichText(
-                                modifier = Modifier.padding(16.dp)
-                            ) {
-                                Markdown(item.message)
+                        Column {
+                            Text(item.timestamp.atZone(zoneId).toString())
+                            SelectionContainer {
+                                RichText(
+                                    modifier = Modifier.padding(16.dp)
+                                ) {
+                                    Markdown(item.message)
+                                }
                             }
                         }
                     }
