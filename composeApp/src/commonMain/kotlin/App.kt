@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -92,7 +93,9 @@ fun App(chatGPTService: ChatGPTService, chatLogRepository: ChatLogRepository) {
                             )
                             .padding(8.dp)
                     ) {
-                        Text(text = item.message, modifier = Modifier.padding(8.dp))
+                        SelectionContainer {
+                            Text(text = item.message, modifier = Modifier.padding(8.dp))
+                        }
                     }
                     Spacer(modifier = Modifier.height(1.dp).fillMaxWidth().background(Color.Gray))
                 }
