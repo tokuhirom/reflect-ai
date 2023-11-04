@@ -2,18 +2,20 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import model.ChatLog
 import model.ChatLogMessage
+import org.slf4j.LoggerFactory
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.time.Instant
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 
 class ChatLogRepository(private val objectMapper: ObjectMapper, private val zoneId: ZoneId) {
+    private val logger = LoggerFactory.getLogger(javaClass)
+
     fun saveConversations(logs: List<ChatLogMessage>, targetTime: Instant = Instant.now()) {
         val targetDateTime = targetTime.atZone(zoneId)
-        val dateStr = targetDateTime.toLocalDate().toString()
+        val dateStr = targetDate(targetDateTime).toString()
         val directoryPath = Paths.get(System.getProperty("user.home"), "ReflectAI")
         val filePath = directoryPath.resolve("$dateStr.json")
 
@@ -31,6 +33,7 @@ class ChatLogRepository(private val objectMapper: ObjectMapper, private val zone
         if (Files.exists(filePath)) {
             val currentSize = Files.size(filePath)
             if (currentSize > json.size) {
+                logger.info("File size is too small: $filePath. Skipping the save operation: $currentSize < ${json.size}")
                 showAlert("File size is too small. Skipping the save operation: $currentSize < ${json.size}")
                 return
             }
@@ -40,7 +43,7 @@ class ChatLogRepository(private val objectMapper: ObjectMapper, private val zone
         Files.write(filePath, json)
     }
 
-    fun loadConversations(date: LocalDate = currentDate()): ChatLog {
+    fun loadConversations(date: LocalDate = targetDate(ZonedDateTime.now())): ChatLog {
         println("loadConversations: $date")
 
         val directoryPath = Paths.get(System.getProperty("user.home"), "ReflectAI")
@@ -78,14 +81,12 @@ class ChatLogRepository(private val objectMapper: ObjectMapper, private val zone
         }
     }
 
-    fun currentDate(): LocalDate {
-        val current = LocalDateTime.now()
-
+    private fun targetDate(targetDateTime: ZonedDateTime): LocalDate {
         // 深夜帯は前日扱い
-        if (current.hour in 0..4) {
-            return current.toLocalDate().minusDays(1)
+        if (targetDateTime.hour in 0..4) {
+            return targetDateTime.toLocalDate().minusDays(1)
         }
 
-        return current.toLocalDate()
+        return targetDateTime.toLocalDate()
     }
 }
