@@ -12,6 +12,7 @@ fun main() = application {
         .registerModule(JavaTimeModule())
     val chatLogRepository = ChatLogRepository(objectMapper, ZoneId.systemDefault())
     val prompt = "You are a assistant to help the Java/Kotlin developers." +
+            "I prefer kotlin scripting when writing gradle script." +
 //            "あなたはチャットの一参加者なのではあなたは明示的に質問された場合ととても良いアドバイスが思いついた場合以外は返答する必要はありません" +
 //            "どちらでもない場合は *nods* とだけ答えてください。" +
             "The developer prefers Japanese. You must answer in Japanese."
