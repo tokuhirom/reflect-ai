@@ -64,7 +64,7 @@ class ChatLogRepository(private val objectMapper: ObjectMapper, private val zone
         }
     }
 
-    fun filterChatLogMessages(chatLogMessages: List<ChatLogMessage>, targetDateTime: ZonedDateTime) : List<ChatLogMessage> {
+    private fun filterChatLogMessages(chatLogMessages: List<ChatLogMessage>, targetDateTime: ZonedDateTime) : List<ChatLogMessage> {
         val (start, end) =  if (targetDateTime.hour < 5) {
             // 深夜帯は前日扱い
             val start = targetDateTime.minusDays(1).withHour(5).toInstant()
