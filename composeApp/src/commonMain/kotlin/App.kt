@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
@@ -29,11 +28,6 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.isMetaPressed
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
-import androidx.compose.ui.layout.layoutId
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.aallam.openai.api.exception.InvalidRequestException
 import com.halilibo.richtext.markdown.Markdown
@@ -42,7 +36,6 @@ import io.ktor.client.plugins.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import model.ChatLogMessage
 import model.ChatLogRole
 import org.slf4j.LoggerFactory
@@ -53,7 +46,6 @@ import javax.swing.JOptionPane
 fun showAlert(message: String) {
     JOptionPane.showMessageDialog(null, message, "Alert", JOptionPane.WARNING_MESSAGE)
 }
-
 
 
 @Composable
@@ -90,7 +82,7 @@ fun App(chatGPTService: ChatGPTService, chatLogRepository: ChatLogRepository, zo
                 lazyListState.animateScrollToItem(maxOf(conversation.size - 1, 0))
             }
 
-            LazyColumn(modifier = Modifier.weight(1f), state=lazyListState) {
+            LazyColumn(modifier = Modifier.weight(1f), state = lazyListState) {
                 items(conversation) { item ->
                     Box(
                         modifier = Modifier
@@ -133,6 +125,7 @@ fun App(chatGPTService: ChatGPTService, chatLogRepository: ChatLogRepository, zo
                                     sendMessage()
                                     true
                                 }
+
                                 else -> false
                             }
                         }
