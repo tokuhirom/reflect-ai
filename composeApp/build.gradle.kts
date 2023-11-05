@@ -4,7 +4,7 @@ import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
-    kotlin("plugin.serialization") version "1.5.31"
+    kotlin("plugin.serialization") version "1.9.20"
     
     alias(libs.plugins.jetbrainsCompose)
 }
