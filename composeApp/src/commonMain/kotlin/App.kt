@@ -42,6 +42,7 @@ import io.ktor.client.plugins.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import model.ChatLogMessage
 import model.ChatLogRole
 import org.slf4j.LoggerFactory
@@ -85,7 +86,7 @@ fun App(chatGPTService: ChatGPTService, chatLogRepository: ChatLogRepository, zo
         }
 
         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-            LaunchedEffect(Unit) {
+            LaunchedEffect(conversation) {
                 lazyListState.animateScrollToItem(maxOf(conversation.size - 1, 0))
             }
 
