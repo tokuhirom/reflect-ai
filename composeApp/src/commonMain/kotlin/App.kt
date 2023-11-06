@@ -1,17 +1,22 @@
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.Button
+import androidx.compose.material.DropdownMenu
+import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
@@ -38,6 +43,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import model.ChatLogMessage
 import model.ChatLogRole
+import model.aiModels
 import org.slf4j.LoggerFactory
 import java.time.ZoneId
 import javax.swing.JOptionPane
@@ -52,6 +58,7 @@ fun showAlert(message: String) {
 fun App(chatGPTService: ChatGPTService, chatLogRepository: ChatLogRepository, zoneId: ZoneId) {
     val logger = LoggerFactory.getLogger("App")
     val initialConversation = chatLogRepository.loadConversations().logs
+    var targetAiModel = aiModels.first()
 
     MaterialTheme {
         var message by remember { mutableStateOf("") }
@@ -65,10 +72,13 @@ fun App(chatGPTService: ChatGPTService, chatLogRepository: ChatLogRepository, zo
 
                 CoroutineScope(Dispatchers.Main).launch {
                     try {
-                        chatGPTService.sendMessage(conversation.toList().map { it.toChatMessage() }).let {
-                            conversation += ChatLogMessage(ChatLogRole.AI, it)
-                            chatLogRepository.saveConversations(conversation)
-                        }
+                        chatGPTService.sendMessage(
+                            targetAiModel,
+                            conversation.toList().map { it.toChatMessage() })
+                            .let {
+                                conversation += ChatLogMessage(ChatLogRole.AI, it)
+                                chatLogRepository.saveConversations(conversation)
+                            }
                     } catch (e: InvalidRequestException) {
                         showAlert("Error!!: ${e.message}")
                         chatLogRepository.saveConversations(conversation)
@@ -80,6 +90,32 @@ fun App(chatGPTService: ChatGPTService, chatLogRepository: ChatLogRepository, zo
         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
             LaunchedEffect(conversation) {
                 lazyListState.animateScrollToItem(maxOf(conversation.size - 1, 0))
+            }
+
+            Row {
+                var expanded by remember { mutableStateOf(false) }
+                Box(modifier = Modifier.fillMaxWidth().wrapContentSize(Alignment.TopStart)) {
+                    Text(
+                        targetAiModel.name,
+                        modifier = Modifier.fillMaxWidth().clickable(onClick = { expanded = true }).background(
+                            Color.Gray
+                        )
+                    )
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        aiModels.forEachIndexed { index, aiModel ->
+                            DropdownMenuItem(onClick = {
+                                targetAiModel = aiModel
+                                expanded = false
+                            }) {
+                                Text(text = aiModel.name)
+                            }
+                        }
+                    }
+                }
             }
 
             LazyColumn(modifier = Modifier.weight(1f), state = lazyListState) {
@@ -97,11 +133,20 @@ fun App(chatGPTService: ChatGPTService, chatLogRepository: ChatLogRepository, zo
                     ) {
                         Column {
                             Text(item.timestamp.atZone(zoneId).toString())
-                            SelectionContainer {
-                                RichText(
-                                    modifier = Modifier.padding(16.dp)
-                                ) {
-                                    Markdown(item.message)
+                            if (true) {
+                                SelectionContainer {
+                                    Text(
+                                        modifier = Modifier.padding(16.dp),
+                                        text = item.message
+                                    )
+                                }
+                            } else {
+                                SelectionContainer {
+                                    RichText(
+                                        modifier = Modifier.padding(16.dp)
+                                    ) {
+                                        Markdown(item.message)
+                                    }
                                 }
                             }
                         }
@@ -135,6 +180,43 @@ fun App(chatGPTService: ChatGPTService, chatLogRepository: ChatLogRepository, zo
                     sendMessage()
                 }) {
                     Text("POST")
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun DropdownDemo() {
+    var expanded by remember { mutableStateOf(false) }
+    val items = listOf("A", "B", "C", "D", "E", "F")
+    val disabledValue = "B"
+    var selectedIndex by remember { mutableStateOf(0) }
+    Box(modifier = Modifier.fillMaxSize().wrapContentSize(Alignment.TopStart)) {
+        Text(
+            items[selectedIndex],
+            modifier = Modifier.fillMaxWidth().clickable(onClick = { expanded = true }).background(
+                Color.Gray
+            )
+        )
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.fillMaxWidth().background(
+                Color.Red
+            )
+        ) {
+            items.forEachIndexed { index, s ->
+                DropdownMenuItem(onClick = {
+                    selectedIndex = index
+                    expanded = false
+                }) {
+                    val disabledText = if (s == disabledValue) {
+                        " (Disabled)"
+                    } else {
+                        ""
+                    }
+                    Text(text = s + disabledText)
                 }
             }
         }

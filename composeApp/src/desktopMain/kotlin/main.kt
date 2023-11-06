@@ -23,6 +23,7 @@ fun main() = application {
 
     Window(onCloseRequest = ::exitApplication, title = "ReflectAI") {
         App(chatGPTService, chatLogRepository, zoneId)
+//        DropdownDemo()
     }
 }
 
