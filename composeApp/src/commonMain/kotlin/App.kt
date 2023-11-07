@@ -42,6 +42,7 @@ import com.halilibo.richtext.ui.RichText
 import io.ktor.client.plugins.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import model.ChatLogMessage
 import model.ChatLogRole
@@ -134,6 +135,7 @@ fun App(
 
         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
             LaunchedEffect(conversation) {
+                delay(100) // conversation のレンダリングが終わってからスクロール位置を調整すべき
                 lazyListState.scrollToEnd()
             }
 
