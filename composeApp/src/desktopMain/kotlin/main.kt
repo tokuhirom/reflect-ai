@@ -1,3 +1,10 @@
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyShortcut
+import androidx.compose.ui.window.MenuBar
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import com.fasterxml.jackson.databind.DeserializationFeature
@@ -13,23 +20,33 @@ fun main() = application {
         .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
         .registerModule(JavaTimeModule())
     val chatLogRepository = ChatLogRepository(objectMapper, zoneId)
-    val prompt = "You are a assistant to help the Java/Kotlin developers." +
-            "I prefer kotlin scripting when writing gradle script." +
-//            "あなたはチャットの一参加者なのではあなたは明示的に質問された場合ととても良いアドバイスが思いついた場合以外は返答する必要はありません" +
-//            "どちらでもない場合は *nods* とだけ答えてください。" +
-            "You are rugged and taciturn." +
-            "The developer prefers Japanese. You must answer in Japanese."
-    val chatGPTService = ChatGPTService(apiKey, prompt)
+    val chatGPTService = ChatGPTService(apiKey)
     val configRepository = ConfigRepository()
+    val config = configRepository.loadSettings()
+
+    var showSettingsDialog by remember { mutableStateOf(false) }
 
     Window(onCloseRequest = ::exitApplication, title = "ReflectAI") {
-        App(chatGPTService, chatLogRepository, zoneId, configRepository)
-//        DropdownDemo()
+        App(chatGPTService, chatLogRepository, zoneId, configRepository, config)
+
+        if (showSettingsDialog) {
+            SettingsDialog(config.prompt,
+                onSave = {
+                    config.prompt = it
+                    configRepository.saveSettings(config)
+                },
+                onDialogClose = {
+                    showSettingsDialog = false
+                })
+        }
+
+        MenuBar {
+            this.Menu("Misc") {
+                Item("Configuration", shortcut = KeyShortcut(Key.Comma, meta = true), onClick = {
+                    println("Clicked...")
+                    showSettingsDialog = true
+                })
+            }
+        }
     }
 }
-
-//@Preview
-//@Composable
-//fun AppDesktopPreview() {
-//    App()
-//}

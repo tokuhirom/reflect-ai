@@ -7,10 +7,10 @@ import kotlinx.coroutines.flow.map
 import model.AIModel
 import org.slf4j.LoggerFactory
 
-class ChatGPTService(private val apiKey: String, private val prompt: String) {
+class ChatGPTService(private val apiKey: String) {
     private val logger = LoggerFactory.getLogger(javaClass)
 
-    suspend fun sendMessage(aiModel: AIModel, messages: List<ChatMessage>): Flow<String> {
+    suspend fun sendMessage(aiModel: AIModel, prompt: String, messages: List<ChatMessage>): Flow<String> {
         val openai = OpenAI(token = apiKey)
 
         // gpt-3.5-turbo is max 4,097 tokens.

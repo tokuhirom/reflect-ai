@@ -45,6 +45,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import model.ChatLogMessage
 import model.ChatLogRole
+import model.Config
 import model.aiModels
 import org.slf4j.LoggerFactory
 import java.text.NumberFormat
@@ -84,7 +85,8 @@ fun App(
     chatGPTService: ChatGPTService,
     chatLogRepository: ChatLogRepository,
     zoneId: ZoneId,
-    configRepository: ConfigRepository
+    configRepository: ConfigRepository,
+    config: Config
 ) {
     val logger = LoggerFactory.getLogger("App")
     val initialConversation = chatLogRepository.loadConversations().logs
@@ -110,6 +112,7 @@ fun App(
 
                         chatGPTService.sendMessage(
                             targetAiModel,
+                            config.prompt,
                             conversation.toList().map { it.toChatMessage() })
                             .collect {
                                 val current = conversation[conversation.size - 1]

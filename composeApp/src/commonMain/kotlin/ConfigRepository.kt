@@ -21,6 +21,7 @@ class ConfigRepository {
             path.parent.toFile().mkdirs()
         }
 
+        println("Saving $path: $jsonData")
         val tempFile = path.resolveSibling(path.name + ".tmp")
         tempFile.writeText(jsonData)
         Files.move(tempFile, path, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING)
