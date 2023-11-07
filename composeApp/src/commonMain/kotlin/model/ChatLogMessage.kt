@@ -11,7 +11,7 @@ data class ChatLog(
 
 data class ChatLogMessage(
     val role: ChatLogRole,
-    val message: String,
+    var message: String,
     val id: String = UUID.randomUUID().toString(),
     val timestamp: Instant = Instant.now(),
 ) {

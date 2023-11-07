@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -72,11 +71,20 @@ fun App(chatGPTService: ChatGPTService, chatLogRepository: ChatLogRepository, zo
 
                 CoroutineScope(Dispatchers.Main).launch {
                     try {
+                        val log = ChatLogMessage(ChatLogRole.AI, "")
+                        conversation += log
+
                         chatGPTService.sendMessage(
                             targetAiModel,
                             conversation.toList().map { it.toChatMessage() })
-                            .let {
-                                conversation += ChatLogMessage(ChatLogRole.AI, it)
+                            .collect {
+                                val current = conversation[conversation.size - 1]
+                                conversation = conversation.toMutableList().dropLast(1) + ChatLogMessage(
+                                    ChatLogRole.AI,
+                                    current.message + it,
+                                    current.id,
+                                    current.timestamp
+                                )
                                 chatLogRepository.saveConversations(conversation)
                             }
                     } catch (e: InvalidRequestException) {
