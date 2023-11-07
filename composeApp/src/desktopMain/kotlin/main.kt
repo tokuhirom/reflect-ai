@@ -20,9 +20,10 @@ fun main() = application {
             "You are rugged and taciturn." +
             "The developer prefers Japanese. You must answer in Japanese."
     val chatGPTService = ChatGPTService(apiKey, prompt)
+    val configRepository = ConfigRepository()
 
     Window(onCloseRequest = ::exitApplication, title = "ReflectAI") {
-        App(chatGPTService, chatLogRepository, zoneId)
+        App(chatGPTService, chatLogRepository, zoneId, configRepository)
 //        DropdownDemo()
     }
 }

@@ -56,10 +56,17 @@ fun showAlert(message: String) {
 
 
 @Composable
-fun App(chatGPTService: ChatGPTService, chatLogRepository: ChatLogRepository, zoneId: ZoneId) {
+fun App(
+    chatGPTService: ChatGPTService,
+    chatLogRepository: ChatLogRepository,
+    zoneId: ZoneId,
+    configRepository: ConfigRepository
+) {
     val logger = LoggerFactory.getLogger("App")
     val initialConversation = chatLogRepository.loadConversations().logs
-    var targetAiModel = aiModels.first()
+    val config = configRepository.loadSettings()
+    var targetAiModel = aiModels.firstOrNull { it.name == config.defaultModelName }
+        ?: aiModels.first()
     val numberFormat = NumberFormat.getNumberInstance(Locale.getDefault())
 
     MaterialTheme {
@@ -121,6 +128,8 @@ fun App(chatGPTService: ChatGPTService, chatLogRepository: ChatLogRepository, zo
                             DropdownMenuItem(onClick = {
                                 targetAiModel = aiModel
                                 expanded = false
+                                config.defaultModelName = aiModel.name
+                                configRepository.saveSettings(config)
                             }) {
                                 Text(text = aiModel.name + " (" + numberFormat.format(aiModel.maxTokens) + " max tokens)")
                             }
