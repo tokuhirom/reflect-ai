@@ -1,6 +1,7 @@
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.selection.SelectionContainer
@@ -32,6 +34,7 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.isMetaPressed
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.aallam.openai.api.exception.InvalidRequestException
 import com.halilibo.richtext.markdown.Markdown
@@ -54,6 +57,27 @@ fun showAlert(message: String) {
     JOptionPane.showMessageDialog(null, message, "Alert", JOptionPane.WARNING_MESSAGE)
 }
 
+suspend fun LazyListState.scrollToEnd() {
+    // スクロールする必要があるアイテムがない場合は何もしない
+    if (layoutInfo.totalItemsCount == 0) {
+        return
+    }
+
+    // リストの最後のアイテムのインデックスを取得
+    val lastIndex = layoutInfo.totalItemsCount - 1
+
+    // リストの最後のアイテムまでアニメーション付きでスクロールする
+    animateScrollToItem(index = lastIndex)
+
+    // 最後のアイテムのオフセットを計算し、さらにスクロールして末尾に到達させる
+    val lastItemInfo = layoutInfo.visibleItemsInfo.lastOrNull { it.index == lastIndex }
+    lastItemInfo?.let {
+        val scrollOffset = it.size - (layoutInfo.viewportEndOffset - it.offset)
+        if (scrollOffset > 0) {
+            animateScrollBy(scrollOffset.toFloat())
+        }
+    }
+}
 
 @Composable
 fun App(
@@ -70,14 +94,14 @@ fun App(
     val numberFormat = NumberFormat.getNumberInstance(Locale.getDefault())
 
     MaterialTheme {
-        var message by remember { mutableStateOf("") }
+        var message by remember { mutableStateOf(TextFieldValue("")) }
         var conversation by remember { mutableStateOf(initialConversation) }
         val lazyListState = rememberLazyListState()
 
         fun sendMessage() {
-            if (message.isNotEmpty()) {
-                conversation += ChatLogMessage(ChatLogRole.User, message)
-                message = ""
+            if (message.text.isNotEmpty()) {
+                conversation += ChatLogMessage(ChatLogRole.User, message.text)
+                message = TextFieldValue("")
 
                 CoroutineScope(Dispatchers.Main).launch {
                     try {
@@ -107,7 +131,7 @@ fun App(
 
         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
             LaunchedEffect(conversation) {
-                lazyListState.animateScrollToItem(maxOf(conversation.size - 1, 0))
+                lazyListState.scrollToEnd()
             }
 
             Row {
