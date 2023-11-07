@@ -36,19 +36,15 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import com.aallam.openai.api.exception.InvalidRequestException
 import com.halilibo.richtext.markdown.Markdown
 import com.halilibo.richtext.ui.RichText
-import io.ktor.client.plugins.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import model.ChatLogMessage
 import model.ChatLogRole
-import model.Config
 import model.aiModels
-import org.slf4j.LoggerFactory
 import java.text.NumberFormat
 import java.time.ZoneId
 import java.util.*
@@ -86,10 +82,8 @@ fun App(
     chatGPTService: ChatGPTService,
     chatLogRepository: ChatLogRepository,
     zoneId: ZoneId,
-    configRepository: ConfigRepository,
-    config: Config
+    configRepository: ConfigRepository
 ) {
-    val logger = LoggerFactory.getLogger("App")
     val initialConversation = chatLogRepository.loadConversations().logs
     val config = configRepository.loadSettings()
     var targetAiModel = aiModels.firstOrNull { it.name == config.defaultModelName }
@@ -107,27 +101,31 @@ fun App(
                 message = TextFieldValue("")
 
                 CoroutineScope(Dispatchers.Main).launch {
-                    try {
-                        val log = ChatLogMessage(ChatLogRole.AI, "")
-                        conversation += log
+                    var current = ChatLogMessage(ChatLogRole.AI, "")
+                    conversation += current
 
+                    fun updateMessage(msg: String) {
+                        current = ChatLogMessage(
+                            ChatLogRole.AI,
+                            current.message + msg,
+                            current.id,
+                            current.timestamp
+                        )
+                        conversation = conversation.filter { it.id != current.id } + current
+                    }
+
+                    try {
                         chatGPTService.sendMessage(
                             config.apiToken,
                             targetAiModel,
                             config.prompt,
                             conversation.toList().map { it.toChatMessage() })
                             .collect {
-                                val current = conversation[conversation.size - 1]
-                                conversation = conversation.toMutableList().dropLast(1) + ChatLogMessage(
-                                    ChatLogRole.AI,
-                                    current.message + it,
-                                    current.id,
-                                    current.timestamp
-                                )
+                                updateMessage(it)
                                 chatLogRepository.saveConversations(conversation)
                             }
-                    } catch (e: InvalidRequestException) {
-                        showAlert("Error!!: ${e.message}")
+                    } catch (e: Exception) {
+                        updateMessage(e.message ?: "Got an error : $e")
                         chatLogRepository.saveConversations(conversation)
                     }
                 }
