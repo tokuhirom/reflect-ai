@@ -44,7 +44,9 @@ import model.ChatLogMessage
 import model.ChatLogRole
 import model.aiModels
 import org.slf4j.LoggerFactory
+import java.text.NumberFormat
 import java.time.ZoneId
+import java.util.*
 import javax.swing.JOptionPane
 
 
@@ -58,6 +60,7 @@ fun App(chatGPTService: ChatGPTService, chatLogRepository: ChatLogRepository, zo
     val logger = LoggerFactory.getLogger("App")
     val initialConversation = chatLogRepository.loadConversations().logs
     var targetAiModel = aiModels.first()
+    val numberFormat = NumberFormat.getNumberInstance(Locale.getDefault())
 
     MaterialTheme {
         var message by remember { mutableStateOf("") }
@@ -119,7 +122,7 @@ fun App(chatGPTService: ChatGPTService, chatLogRepository: ChatLogRepository, zo
                                 targetAiModel = aiModel
                                 expanded = false
                             }) {
-                                Text(text = aiModel.name)
+                                Text(text = aiModel.name + " (" + numberFormat.format(aiModel.maxTokens) + " max tokens)")
                             }
                         }
                     }

@@ -8,6 +8,8 @@ import okio.FileSystem
 
 
 val aiModels = listOf(
+    AIModel("gpt-3.5-turbo-1106", 16385),
+    AIModel("gpt-4-1106-preview", 128000),
     AIModel("gpt-3.5-turbo", 4097),
     AIModel("gpt-3.5-turbo-16k", 16385),
     AIModel("gpt-4", 8192),
