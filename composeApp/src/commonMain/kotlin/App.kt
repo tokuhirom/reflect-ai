@@ -112,6 +112,7 @@ fun App(
                         conversation += log
 
                         chatGPTService.sendMessage(
+                            config.apiToken,
                             targetAiModel,
                             config.prompt,
                             conversation.toList().map { it.toChatMessage() })

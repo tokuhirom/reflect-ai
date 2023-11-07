@@ -15,12 +15,11 @@ import java.time.ZoneId
 fun main() = application {
     val zoneId = ZoneId.systemDefault()
     println("ZoneId: $zoneId")
-    val apiKey = System.getenv("OPENAI_API_KEY") ?: throw RuntimeException("OPENAI_API_KEY is not set.")
     val objectMapper = jacksonObjectMapper()
         .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
         .registerModule(JavaTimeModule())
     val chatLogRepository = ChatLogRepository(objectMapper, zoneId)
-    val chatGPTService = ChatGPTService(apiKey)
+    val chatGPTService = ChatGPTService()
     val configRepository = ConfigRepository()
     val config = configRepository.loadSettings()
 
@@ -30,9 +29,11 @@ fun main() = application {
         App(chatGPTService, chatLogRepository, zoneId, configRepository, config)
 
         if (showSettingsDialog) {
-            SettingsDialog(config.prompt,
-                onSave = {
-                    config.prompt = it
+            SettingsDialog(
+                config,
+                onSave = { prompt, apiToken ->
+                    config.prompt = prompt
+                    config.apiToken = apiToken
                     configRepository.saveSettings(config)
                 },
                 onDialogClose = {

@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Button
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
+import androidx.compose.material.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -14,14 +15,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogWindow
 import androidx.compose.ui.window.rememberDialogState
+import model.Config
 
 @Composable
 fun SettingsDialog(
-    initialPrompt: String,
-    onSave: (String) -> Unit,
+    config: Config,
+    onSave: (String, String) -> Unit,
     onDialogClose: () -> Unit
 ) {
-    var prompt by remember { mutableStateOf(initialPrompt) }
+    var prompt by remember { mutableStateOf(config.prompt) }
+    var apiToken by remember { mutableStateOf(config.apiToken) }
 
     DialogWindow(
         onCloseRequest = onDialogClose,
@@ -32,7 +35,14 @@ fun SettingsDialog(
         Column(
             modifier = Modifier.padding(16.dp).fillMaxSize()
         ) {
-            Text("ChatGPTのプロンプト設定：", modifier = Modifier.padding(bottom = 8.dp))
+            Text("OpenAI API token:")
+            TextField(
+                value = apiToken,
+                onValueChange = {
+                    apiToken = it
+                }
+            )
+            Text("Prompt：", modifier = Modifier.padding(bottom = 8.dp))
             OutlinedTextField(
                 value = prompt,
                 onValueChange = { prompt = it },
@@ -42,7 +52,7 @@ fun SettingsDialog(
             )
             Button(
                 onClick = {
-                    onSave(prompt)
+                    onSave(prompt, apiToken)
                     onDialogClose()
                 }
             ) {

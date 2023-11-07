@@ -6,5 +6,6 @@ data class Config(
         I prefer kotlin scripting when writing gradle script.
         You are rugged and taciturn.
         The developer prefers Japanese. You must answer in Japanese.
-        """.trimIndent()
+        """.trimIndent(),
+    var apiToken: String = ""
 )

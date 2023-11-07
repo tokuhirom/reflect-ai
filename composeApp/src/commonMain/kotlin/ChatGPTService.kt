@@ -1,16 +1,27 @@
 import com.aallam.openai.api.chat.ChatCompletionRequest
 import com.aallam.openai.api.chat.ChatMessage
 import com.aallam.openai.api.chat.ChatRole
+import com.aallam.openai.api.model.Model
 import com.aallam.openai.client.OpenAI
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import model.AIModel
 import org.slf4j.LoggerFactory
 
-class ChatGPTService(private val apiKey: String) {
+class ChatGPTService {
     private val logger = LoggerFactory.getLogger(javaClass)
 
-    suspend fun sendMessage(aiModel: AIModel, prompt: String, messages: List<ChatMessage>): Flow<String> {
+    suspend fun models(apiKey: String): List<Model> {
+        val openai = OpenAI(token = apiKey)
+        return openai.models()
+    }
+
+    suspend fun sendMessage(
+        apiKey: String,
+        aiModel: AIModel,
+        prompt: String,
+        messages: List<ChatMessage>
+    ): Flow<String> {
         val openai = OpenAI(token = apiKey)
 
         // gpt-3.5-turbo is max 4,097 tokens.
