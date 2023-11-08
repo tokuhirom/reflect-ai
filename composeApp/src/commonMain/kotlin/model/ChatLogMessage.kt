@@ -18,7 +18,8 @@ data class ChatLogMessage(
     fun toChatMessage(): ChatMessage {
         return ChatMessage(
             role = when (role) {
-                ChatLogRole.AI -> ChatRole.System
+                ChatLogRole.AI -> ChatRole.Assistant
+                ChatLogRole.Error -> ChatRole.System
                 ChatLogRole.User -> ChatRole.User
             },
             content = message
@@ -29,4 +30,5 @@ data class ChatLogMessage(
 enum class ChatLogRole {
     AI,
     User,
+    Error,
 }

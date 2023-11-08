@@ -104,9 +104,9 @@ fun App(
                     var current = ChatLogMessage(ChatLogRole.AI, "")
                     conversation += current
 
-                    fun updateMessage(msg: String) {
+                    fun updateMessage(msg: String, role: ChatLogRole) {
                         current = ChatLogMessage(
-                            ChatLogRole.AI,
+                            role,
                             current.message + msg,
                             current.id,
                             current.timestamp
@@ -119,13 +119,15 @@ fun App(
                             config.apiToken,
                             targetAiModel,
                             config.prompt,
-                            conversation.toList().map { it.toChatMessage() })
-                            .collect {
-                                updateMessage(it)
-                                chatLogRepository.saveConversations(conversation)
-                            }
+                            conversation.toList()
+                                .filter { it.role != ChatLogRole.Error }
+                                .map { it.toChatMessage() }
+                        ).collect {
+                            updateMessage(it, ChatLogRole.AI)
+                            chatLogRepository.saveConversations(conversation)
+                        }
                     } catch (e: Exception) {
-                        updateMessage(e.message ?: "Got an error : $e")
+                        updateMessage(e.message ?: "Got an error : $e", ChatLogRole.Error)
                         chatLogRepository.saveConversations(conversation)
                     }
                 }
@@ -175,6 +177,7 @@ fun App(
                                 when (item.role) {
                                     ChatLogRole.User -> Color.White
                                     ChatLogRole.AI -> Color.LightGray
+                                    ChatLogRole.Error -> Color.LightGray
                                 }
                             )
                             .padding(16.dp)
@@ -185,7 +188,12 @@ fun App(
                                 SelectionContainer {
                                     Text(
                                         modifier = Modifier.padding(16.dp),
-                                        text = item.message
+                                        text = item.message,
+                                        color = when (item.role) {
+                                            ChatLogRole.User -> Color.Black
+                                            ChatLogRole.AI -> Color.Black
+                                            ChatLogRole.Error -> Color(0xa0003000)
+                                        }
                                     )
                                 }
                             } else {
