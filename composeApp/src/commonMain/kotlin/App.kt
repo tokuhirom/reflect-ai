@@ -142,7 +142,7 @@ fun App(
                 var expanded by remember { mutableStateOf(false) }
                 Box(modifier = Modifier.fillMaxWidth().wrapContentSize(Alignment.TopStart)) {
                     Text(
-                        targetAiModel.name,
+                        targetAiModel.name + " (${targetAiModel.maxTokens} max tokens)",
                         modifier = Modifier.fillMaxWidth().clickable(onClick = { expanded = true }).background(
                             Color.Gray
                         )
