@@ -19,7 +19,7 @@ kotlin {
         val desktopMain by getting {
             dependencies {
                 implementation(compose.desktop.currentOs)
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.7.2")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.7.3")
                 implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.3")
                 implementation("com.halilibo.compose-richtext:richtext-commonmark:0.17.0")
                 implementation("com.halilibo.compose-richtext:richtext-commonmark-jvm:0.17.0")
