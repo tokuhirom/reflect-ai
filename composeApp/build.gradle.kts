@@ -45,7 +45,7 @@ kotlin {
                 implementation("com.halilibo.compose-richtext:richtext-commonmark:0.17.0")
                 implementation("com.halilibo.compose-richtext:richtext-commonmark-jvm:0.17.0")
 
-                val ktorVersion = "2.3.5"
+                val ktorVersion = "2.3.6"
                 implementation("io.ktor:ktor-client-core:$ktorVersion")
                 implementation("io.ktor:ktor-client-cio:$ktorVersion")
                 implementation("io.ktor:ktor-client-serialization:$ktorVersion")
