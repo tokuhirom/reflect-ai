@@ -8,7 +8,7 @@ import androidx.compose.ui.text.withStyle
 
 fun makeMarkdownAnnotatedString(inputText: String): AnnotatedString {
     val pattern =
-        """(https?://[^\s\]]+)|(\*\*[^\n]*?\*\*)|(```[a-zA-Z0-9]*\n?.*?\n?```)""".toRegex(RegexOption.DOT_MATCHES_ALL)
+        """(https?://[^\s\]]+)|(\*\*[^*\n]*?\*\*)|(```[a-zA-Z0-9]*\n?(.*?)\n?```)""".toRegex(RegexOption.DOT_MATCHES_ALL)
     val matches = pattern.findAll(inputText).toList()
 
     val annotatedText = buildAnnotatedString {
@@ -19,6 +19,7 @@ fun makeMarkdownAnnotatedString(inputText: String): AnnotatedString {
             val urlGroup = matchResult.groups[1]
             val boldGroup = matchResult.groups[2]
             val codeBlockGroup = matchResult.groups[3]
+            val codeBlockBodyGroup = matchResult.groups[4]
 
             append(inputText.substring(lastEnd, matchStart))
 
@@ -53,18 +54,30 @@ fun makeMarkdownAnnotatedString(inputText: String): AnnotatedString {
                     }
                 }
 
-                codeBlockGroup != null -> {
+                codeBlockGroup != null && codeBlockBodyGroup != null -> {
+                    pushStringAnnotation(
+                        tag = "COPY_CODEBLOCK",
+                        annotation = codeBlockBodyGroup.value
+                    )
+                    withStyle(
+                        style = SpanStyle(
+                            color = Color.Blue,
+                        )
+                    ) {
+                        append("COPY 📋\n")
+                    }
+
                     pushStringAnnotation(
                         tag = "CODEBLOCK",
                         annotation = inputText.substring(matchStart, matchEnd + 1)
                     )
                     withStyle(
                         style = SpanStyle(
-                            color = Color.Gray,
-                            background = Color.LightGray,
+                            color = Color.White,
+                            background = Color.Black,
                         )
                     ) {
-                        append(inputText.substring(matchStart + 3, matchEnd - 2))
+                        append(codeBlockBodyGroup.value)
                     }
                 }
 

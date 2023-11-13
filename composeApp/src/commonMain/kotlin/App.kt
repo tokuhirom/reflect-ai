@@ -71,6 +71,11 @@ fun showAlert(message: String) {
     JOptionPane.showMessageDialog(null, message, "Alert", JOptionPane.WARNING_MESSAGE)
 }
 
+fun copyToClipboard(text: String) {
+    val clipboard: Clipboard = Toolkit.getDefaultToolkit().systemClipboard
+    val stringSelection = StringSelection(text)
+    clipboard.setContents(stringSelection, stringSelection)
+}
 
 fun openUrl(url: String) {
     if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
@@ -263,10 +268,17 @@ fun App(
                                                     tag = "URL",
                                                     start = offset,
                                                     end = offset
-                                                )
-                                                    .firstOrNull()?.let { annotation ->
-                                                        openUrl(annotation.item)
-                                                    }
+                                                ).firstOrNull()?.let { annotation ->
+                                                    openUrl(annotation.item)
+                                                }
+
+                                                annotatedText.getStringAnnotations(
+                                                    tag = "COPY_CODEBLOCK",
+                                                    start = offset,
+                                                    end = offset,
+                                                ).firstOrNull()?.let { annotation ->
+                                                    copyToClipboard(annotation.item)
+                                                }
                                             },
                                         style = TextStyle(
                                             color = when (item.role) {
