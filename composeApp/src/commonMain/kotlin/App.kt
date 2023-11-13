@@ -105,7 +105,6 @@ suspend fun LazyListState.scrollToEnd() {
     }
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun App(
     chatGPTService: ChatGPTService,
