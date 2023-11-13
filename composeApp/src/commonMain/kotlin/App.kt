@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.MaterialTheme
@@ -45,6 +46,9 @@ import kotlinx.coroutines.launch
 import model.ChatLogMessage
 import model.ChatLogRole
 import model.aiModels
+import java.awt.Toolkit
+import java.awt.datatransfer.Clipboard
+import java.awt.datatransfer.StringSelection
 import java.text.NumberFormat
 import java.time.ZoneId
 import java.util.*
@@ -79,6 +83,11 @@ suspend fun LazyListState.scrollToEnd() {
             animateScrollBy(scrollOffset.toFloat())
         }
     }
+}
+
+fun extractCodeBlocks(mkdn: String): List<Pair<String?, String>> {
+    val pattern = Regex("```([a-zA-Z0-9]+\n)?(.*?)(?<=\\n)```", RegexOption.DOT_MATCHES_ALL)
+    return pattern.findAll(mkdn).map { it.groupValues[1] to it.groupValues[2] }.toList()
 }
 
 @Composable
@@ -187,7 +196,40 @@ fun App(
                             .padding(16.dp)
                     ) {
                         Column {
-                            Text(item.timestamp.atZone(zoneId).toString())
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(item.timestamp.atZone(zoneId).toString())
+                                Spacer(modifier = Modifier.weight(1f))
+                                Button(
+                                    onClick = {
+                                        // Copy text to clipboard
+                                        val clipboard: Clipboard = Toolkit.getDefaultToolkit().systemClipboard
+                                        val stringSelection = StringSelection(item.message)
+                                        clipboard.setContents(stringSelection, stringSelection)
+                                    }, colors = ButtonDefaults.buttonColors(
+                                        backgroundColor = Color.Gray,
+                                        contentColor = Color.White
+                                    )
+                                ) {
+                                    Text("\uD83D\uDCCB")
+                                }
+                                extractCodeBlocks(item.message).forEachIndexed { idx, (lang, codeBlock) ->
+                                    Button(
+                                        onClick = {
+                                            // Copy text to clipboard
+                                            val clipboard: Clipboard =
+                                                Toolkit.getDefaultToolkit().systemClipboard
+                                            val stringSelection = StringSelection(codeBlock)
+                                            clipboard.setContents(stringSelection, stringSelection)
+                                        }, colors = ButtonDefaults.buttonColors(
+                                            backgroundColor = Color.Gray,
+                                            contentColor = Color.White
+                                        )
+                                    ) {
+                                        Text("\uD83D\uDCCB(${lang ?: "Code"}($idx)")
+                                    }
+                                }
+                            }
+
                             if (true) {
                                 SelectionContainer {
                                     Text(
