@@ -250,34 +250,36 @@ fun App(
                                 val annotatedText = makeMarkdownAnnotatedString(item.message)
 
                                 // https://github.com/JetBrains/compose-multiplatform/issues/1450
-                                var lastLayoutResult: TextLayoutResult? by remember { mutableStateOf(null) }
-                                BasicText(
-                                    text = annotatedText,
-                                    modifier = Modifier.padding(16.dp)
-                                        .onPointerEvent(PointerEventType.Release) {
-                                            val offset =
-                                                lastLayoutResult?.getOffsetForPosition(it.changes.first().position)
-                                                    ?: 0
-                                            annotatedText.getStringAnnotations(
-                                                tag = "URL",
-                                                start = offset,
-                                                end = offset
-                                            )
-                                                .firstOrNull()?.let { annotation ->
-                                                    openUrl(annotation.item)
-                                                }
-                                        },
-                                    style = TextStyle(
-                                        color = when (item.role) {
-                                            ChatLogRole.User -> Color.Black
-                                            ChatLogRole.AI -> Color.Black
-                                            ChatLogRole.Error -> Color(0xa0003000)
+                                SelectionContainer {
+                                    var lastLayoutResult: TextLayoutResult? by remember { mutableStateOf(null) }
+                                    BasicText(
+                                        text = annotatedText,
+                                        modifier = Modifier.padding(16.dp)
+                                            .onPointerEvent(PointerEventType.Release) {
+                                                val offset =
+                                                    lastLayoutResult?.getOffsetForPosition(it.changes.first().position)
+                                                        ?: 0
+                                                annotatedText.getStringAnnotations(
+                                                    tag = "URL",
+                                                    start = offset,
+                                                    end = offset
+                                                )
+                                                    .firstOrNull()?.let { annotation ->
+                                                        openUrl(annotation.item)
+                                                    }
+                                            },
+                                        style = TextStyle(
+                                            color = when (item.role) {
+                                                ChatLogRole.User -> Color.Black
+                                                ChatLogRole.AI -> Color.Black
+                                                ChatLogRole.Error -> Color(0xa0003000)
+                                            }
+                                        ),
+                                        onTextLayout = { layoutResult ->
+                                            lastLayoutResult = layoutResult
                                         }
-                                    ),
-                                    onTextLayout = { layoutResult ->
-                                        lastLayoutResult = layoutResult
-                                    }
-                                )
+                                    )
+                                }
                             } else {
                                 SelectionContainer {
                                     RichText(

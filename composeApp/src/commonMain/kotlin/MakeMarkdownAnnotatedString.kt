@@ -6,11 +6,11 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 
 fun makeMarkdownAnnotatedString(inputText: String): AnnotatedString {
-    val urlPattern = """https?://[^\s\]]+""".toRegex()
-    val urlMatches = urlPattern.findAll(inputText).toList()
+    val pattern = """(https?://[^\s\]]+)|(\*\*(.*?)\*\*)""".toRegex()
+    val matches = pattern.findAll(inputText).toList()
 
     val annotatedText = buildAnnotatedString {
-        urlMatches.fold(0, { lastEnd, matchResult ->
+        matches.fold(0, { lastEnd, matchResult ->
             val matchStart = matchResult.range.first
             val matchEnd = matchResult.range.last
 
