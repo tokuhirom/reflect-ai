@@ -233,65 +233,10 @@ fun App(
                                 ) {
                                     Text("\uD83D\uDCCB")
                                 }
-                                extractCodeBlocks(item.message).forEachIndexed { idx, (lang, codeBlock) ->
-                                    Button(
-                                        onClick = {
-                                            // Copy text to clipboard
-                                            val clipboard: Clipboard =
-                                                Toolkit.getDefaultToolkit().systemClipboard
-                                            val stringSelection = StringSelection(codeBlock)
-                                            clipboard.setContents(stringSelection, stringSelection)
-                                        }, colors = ButtonDefaults.buttonColors(
-                                            backgroundColor = Color.Gray,
-                                            contentColor = Color.White
-                                        )
-                                    ) {
-                                        Text("\uD83D\uDCCB(${lang ?: "Code"}($idx)")
-                                    }
-                                }
                             }
 
                             if (true) {
-                                val annotatedText = makeMarkdownAnnotatedString(item.message)
-
-                                // https://github.com/JetBrains/compose-multiplatform/issues/1450
-                                SelectionContainer {
-                                    var lastLayoutResult: TextLayoutResult? by remember { mutableStateOf(null) }
-                                    BasicText(
-                                        text = annotatedText,
-                                        modifier = Modifier.padding(16.dp)
-                                            .onPointerEvent(PointerEventType.Release) {
-                                                val offset =
-                                                    lastLayoutResult?.getOffsetForPosition(it.changes.first().position)
-                                                        ?: 0
-                                                annotatedText.getStringAnnotations(
-                                                    tag = "URL",
-                                                    start = offset,
-                                                    end = offset
-                                                ).firstOrNull()?.let { annotation ->
-                                                    openUrl(annotation.item)
-                                                }
-
-                                                annotatedText.getStringAnnotations(
-                                                    tag = "COPY_CODEBLOCK",
-                                                    start = offset,
-                                                    end = offset,
-                                                ).firstOrNull()?.let { annotation ->
-                                                    copyToClipboard(annotation.item)
-                                                }
-                                            },
-                                        style = TextStyle(
-                                            color = when (item.role) {
-                                                ChatLogRole.User -> Color.Black
-                                                ChatLogRole.AI -> Color.Black
-                                                ChatLogRole.Error -> Color(0xa0003000)
-                                            }
-                                        ),
-                                        onTextLayout = { layoutResult ->
-                                            lastLayoutResult = layoutResult
-                                        }
-                                    )
-                                }
+                                renderTextBlock(item)
                             } else {
                                 SelectionContainer {
                                     RichText(
@@ -334,6 +279,99 @@ fun App(
                     Text("POST")
                 }
             }
+        }
+    }
+}
+
+@OptIn(ExperimentalComposeUiApi::class)
+@Composable
+private fun renderTextBlock(item: ChatLogMessage) {
+    splitIntoMarkdownBlocks(item.message).forEach { block ->
+        when (block.type) {
+            MarkdownBlocKType.TEXT -> {
+                renderTextBlock(block, item.role)
+            }
+
+            MarkdownBlocKType.CODE -> {
+                renderCodeBlock(block)
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalComposeUiApi::class)
+@Composable
+private fun renderTextBlock(block: MarkdownBlock, role: ChatLogRole) {
+    val annotatedText = makeMarkdownAnnotatedString(block.text)
+
+    // https://github.com/JetBrains/compose-multiplatform/issues/1450
+    SelectionContainer {
+        var lastLayoutResult: TextLayoutResult? by remember { mutableStateOf(null) }
+        BasicText(
+            text = annotatedText,
+            modifier = Modifier.padding(16.dp)
+                .onPointerEvent(PointerEventType.Release) {
+                    val offset =
+                        lastLayoutResult?.getOffsetForPosition(it.changes.first().position)
+                            ?: 0
+                    annotatedText.getStringAnnotations(
+                        tag = "URL",
+                        start = offset,
+                        end = offset
+                    ).firstOrNull()?.let { annotation ->
+                        openUrl(annotation.item)
+                    }
+                },
+            style = TextStyle(
+                color = when (role) {
+                    ChatLogRole.User -> Color.Black
+                    ChatLogRole.AI -> Color.Black
+                    ChatLogRole.Error -> Color(0xa0003000)
+                }
+            ),
+            onTextLayout = { layoutResult ->
+                lastLayoutResult = layoutResult
+            }
+        )
+    }
+}
+
+@Composable
+private fun renderCodeBlock(block: MarkdownBlock) {
+    Column {
+        Row(
+            modifier = Modifier.background(Color(0xFF333333))
+                .padding(8.dp)
+        ) {
+            Text(text = block.lang ?: "Code", color = Color.White)
+            Spacer(modifier = Modifier.weight(1f))
+            Button(
+                onClick = {
+                    // Copy text to clipboard
+                    val clipboard: Clipboard =
+                        Toolkit.getDefaultToolkit().systemClipboard
+                    val stringSelection = StringSelection(block.text)
+                    clipboard.setContents(stringSelection, stringSelection)
+                }, colors = ButtonDefaults.buttonColors(
+                    backgroundColor = Color.Gray,
+                    contentColor = Color.White
+                )
+            ) {
+                Text("Copy")
+            }
+        }
+
+        SelectionContainer(
+            modifier = Modifier.background(Color.Black)
+                .fillMaxWidth()
+        ) {
+            BasicText(
+                text = block.text,
+                modifier = Modifier.padding(16.dp),
+                style = TextStyle(
+                    color = Color.White,
+                )
+            )
         }
     }
 }
