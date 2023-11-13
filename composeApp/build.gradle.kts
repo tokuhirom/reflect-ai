@@ -1,11 +1,11 @@
-import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.compose.ExperimentalComposeLibrary
+import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     kotlin("plugin.serialization") version "1.9.20"
-    
+
     alias(libs.plugins.jetbrainsCompose)
 }
 
@@ -14,15 +14,13 @@ kotlin {
     targetHierarchy.default()
 
     jvm("desktop")
-    
+
     sourceSets {
         val desktopMain by getting {
             dependencies {
                 implementation(compose.desktop.currentOs)
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.7.3")
                 implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.3")
-                implementation("com.halilibo.compose-richtext:richtext-commonmark:0.17.0")
-                implementation("com.halilibo.compose-richtext:richtext-commonmark-jvm:0.17.0")
             }
         }
         val commonMain by getting {
@@ -40,10 +38,6 @@ kotlin {
                 implementation("com.aallam.ktoken:ktoken:0.3.0")
 
                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")
-
-//                implementation("com.github.jeziellago:compose-markdown:0.3.5")
-                implementation("com.halilibo.compose-richtext:richtext-commonmark:0.17.0")
-                implementation("com.halilibo.compose-richtext:richtext-commonmark-jvm:0.17.0")
 
                 val ktorVersion = "2.3.6"
                 implementation("io.ktor:ktor-client-core:$ktorVersion")

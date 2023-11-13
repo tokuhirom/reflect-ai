@@ -43,8 +43,6 @@ import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import com.halilibo.richtext.markdown.Markdown
-import com.halilibo.richtext.ui.RichText
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -229,17 +227,7 @@ fun App(
                                 }
                             }
 
-                            if (true) {
-                                renderTextBlock(item)
-                            } else {
-                                SelectionContainer {
-                                    RichText(
-                                        modifier = Modifier.padding(16.dp)
-                                    ) {
-                                        Markdown(item.message)
-                                    }
-                                }
-                            }
+                            renderTextBlock(item)
                         }
                     }
                     Spacer(modifier = Modifier.height(1.dp).fillMaxWidth().background(Color.Gray))
