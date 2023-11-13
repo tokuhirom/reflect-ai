@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
@@ -29,13 +30,23 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.isMetaPressed
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.onPointerEvent
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.halilibo.richtext.markdown.Markdown
 import com.halilibo.richtext.ui.RichText
@@ -46,9 +57,11 @@ import kotlinx.coroutines.launch
 import model.ChatLogMessage
 import model.ChatLogRole
 import model.aiModels
+import java.awt.Desktop
 import java.awt.Toolkit
 import java.awt.datatransfer.Clipboard
 import java.awt.datatransfer.StringSelection
+import java.net.URI
 import java.text.NumberFormat
 import java.time.ZoneId
 import java.util.*
@@ -61,6 +74,13 @@ fun String.truncateAt(maxLength: Int): String {
 
 fun showAlert(message: String) {
     JOptionPane.showMessageDialog(null, message, "Alert", JOptionPane.WARNING_MESSAGE)
+}
+
+
+fun openUrl(url: String) {
+    if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+        Desktop.getDesktop().browse(URI(url))
+    }
 }
 
 suspend fun LazyListState.scrollToEnd() {
@@ -90,6 +110,7 @@ fun extractCodeBlocks(mkdn: String): List<Pair<String?, String>> {
     return pattern.findAll(mkdn).map { it.groupValues[1] to it.groupValues[2] }.toList()
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun App(
     chatGPTService: ChatGPTService,
@@ -231,17 +252,37 @@ fun App(
                             }
 
                             if (true) {
-                                SelectionContainer {
-                                    Text(
-                                        modifier = Modifier.padding(16.dp),
-                                        text = item.message.truncateAt(10000),
+                                val annotatedText = makeMarkdownAnnotatedString(item.message)
+
+                                // https://github.com/JetBrains/compose-multiplatform/issues/1450
+                                var lastLayoutResult: TextLayoutResult? by remember { mutableStateOf(null) }
+                                BasicText(
+                                    text = annotatedText,
+                                    modifier = Modifier.padding(16.dp)
+                                        .onPointerEvent(PointerEventType.Release) {
+                                            val offset =
+                                                lastLayoutResult?.getOffsetForPosition(it.changes.first().position)
+                                                    ?: 0
+                                            annotatedText.getStringAnnotations(
+                                                tag = "URL",
+                                                start = offset,
+                                                end = offset
+                                            )
+                                                .firstOrNull()?.let { annotation ->
+                                                    openUrl(annotation.item)
+                                                }
+                                        },
+                                    style = TextStyle(
                                         color = when (item.role) {
                                             ChatLogRole.User -> Color.Black
                                             ChatLogRole.AI -> Color.Black
                                             ChatLogRole.Error -> Color(0xa0003000)
                                         }
-                                    )
-                                }
+                                    ),
+                                    onTextLayout = { layoutResult ->
+                                        lastLayoutResult = layoutResult
+                                    }
+                                )
                             } else {
                                 SelectionContainer {
                                     RichText(
@@ -286,4 +327,38 @@ fun App(
             }
         }
     }
+}
+
+private fun makeMarkdownAnnotatedString(inputText: String): AnnotatedString {
+    val urlPattern = """https?://[^\s\]]+""".toRegex()
+    val urlMatches = urlPattern.findAll(inputText).toList()
+
+    val annotatedText = buildAnnotatedString {
+        urlMatches.fold(0, { lastEnd, matchResult ->
+            val matchStart = matchResult.range.first
+            val matchEnd = matchResult.range.last
+
+            append(inputText.substring(lastEnd, matchStart))
+
+            pushStringAnnotation(
+                tag = "URL",
+                annotation = inputText.substring(matchStart, matchEnd + 1)
+            )
+
+            withStyle(
+                style = SpanStyle(
+                    color = Color.Blue,
+                    textDecoration = TextDecoration.Underline
+                )
+            ) {
+                append(inputText.substring(matchStart, matchEnd + 1))
+            }
+
+            pop()
+
+            matchEnd + 1
+        })
+            .let { append(inputText.substring(it)) }  // Add the rest of the text after the last match
+    }
+    return annotatedText
 }
