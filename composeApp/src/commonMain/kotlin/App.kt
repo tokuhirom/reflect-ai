@@ -105,11 +105,6 @@ suspend fun LazyListState.scrollToEnd() {
     }
 }
 
-fun extractCodeBlocks(mkdn: String): List<Pair<String?, String>> {
-    val pattern = Regex("```([a-zA-Z0-9]+\n)?(.*?)(?<=\\n)```", RegexOption.DOT_MATCHES_ALL)
-    return pattern.findAll(mkdn).map { it.groupValues[1] to it.groupValues[2] }.toList()
-}
-
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun App(
