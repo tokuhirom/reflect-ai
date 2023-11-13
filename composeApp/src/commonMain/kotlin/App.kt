@@ -39,14 +39,9 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.halilibo.richtext.markdown.Markdown
 import com.halilibo.richtext.ui.RichText
@@ -327,38 +322,4 @@ fun App(
             }
         }
     }
-}
-
-private fun makeMarkdownAnnotatedString(inputText: String): AnnotatedString {
-    val urlPattern = """https?://[^\s\]]+""".toRegex()
-    val urlMatches = urlPattern.findAll(inputText).toList()
-
-    val annotatedText = buildAnnotatedString {
-        urlMatches.fold(0, { lastEnd, matchResult ->
-            val matchStart = matchResult.range.first
-            val matchEnd = matchResult.range.last
-
-            append(inputText.substring(lastEnd, matchStart))
-
-            pushStringAnnotation(
-                tag = "URL",
-                annotation = inputText.substring(matchStart, matchEnd + 1)
-            )
-
-            withStyle(
-                style = SpanStyle(
-                    color = Color.Blue,
-                    textDecoration = TextDecoration.Underline
-                )
-            ) {
-                append(inputText.substring(matchStart, matchEnd + 1))
-            }
-
-            pop()
-
-            matchEnd + 1
-        })
-            .let { append(inputText.substring(it)) }  // Add the rest of the text after the last match
-    }
-    return annotatedText
 }
