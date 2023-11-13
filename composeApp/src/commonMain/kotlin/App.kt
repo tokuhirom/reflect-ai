@@ -50,6 +50,10 @@ import java.time.ZoneId
 import java.util.*
 import javax.swing.JOptionPane
 
+fun String.truncateAt(maxLength: Int): String {
+    if (this.length <= maxLength) return this
+    return this.take(maxLength) + "..."
+}
 
 fun showAlert(message: String) {
     JOptionPane.showMessageDialog(null, message, "Alert", JOptionPane.WARNING_MESSAGE)
@@ -188,7 +192,7 @@ fun App(
                                 SelectionContainer {
                                     Text(
                                         modifier = Modifier.padding(16.dp),
-                                        text = item.message,
+                                        text = item.message.truncateAt(10000),
                                         color = when (item.role) {
                                             ChatLogRole.User -> Color.Black
                                             ChatLogRole.AI -> Color.Black
