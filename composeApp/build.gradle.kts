@@ -32,6 +32,7 @@ kotlin {
                 implementation(compose.components.resources)
 
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+                implementation("org.jsoup:jsoup:1.16.2")
 
                 implementation("ch.qos.logback:logback-classic:1.4.11")
                 implementation("com.aallam.openai:openai-client:3.5.1")
@@ -45,6 +46,7 @@ kotlin {
                 implementation("io.ktor:ktor-client-serialization:$ktorVersion")
                 implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
                 implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
+                implementation("io.ktor:ktor-client-logging:$ktorVersion")
 
                 implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.3")
                 implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.15.3")

@@ -26,7 +26,6 @@ class ChatLogRepository(private val objectMapper: ObjectMapper, private val zone
 
         val json = objectMapper
             .writeValueAsBytes(ChatLog(logs = filterChatLogMessages(logs, targetDateTime)))
-        println(String(json))
 
         // ファイルが小さくなるケースのときはエラーっぽいので諦める。
         // 基本的には起きないと思うんだよな。こうなったときは再起動したら治る。
@@ -64,8 +63,11 @@ class ChatLogRepository(private val objectMapper: ObjectMapper, private val zone
         }
     }
 
-    private fun filterChatLogMessages(chatLogMessages: List<ChatLogMessage>, targetDateTime: ZonedDateTime) : List<ChatLogMessage> {
-        val (start, end) =  if (targetDateTime.hour < 5) {
+    private fun filterChatLogMessages(
+        chatLogMessages: List<ChatLogMessage>,
+        targetDateTime: ZonedDateTime
+    ): List<ChatLogMessage> {
+        val (start, end) = if (targetDateTime.hour < 5) {
             // 深夜帯は前日扱い
             val start = targetDateTime.minusDays(1).withHour(5).toInstant()
             val end = targetDateTime.withHour(5).toInstant()
