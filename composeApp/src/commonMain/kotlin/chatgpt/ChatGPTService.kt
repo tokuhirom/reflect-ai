@@ -44,7 +44,8 @@ class ChatGPTService {
         apiKey: String,
         aiModel: AIModel,
         prompt: String,
-        messages: List<ChatMessage>
+        messages: List<ChatMessage>,
+        progressUpdate: (String) -> Unit,
     ): Flow<ChatCompletionStreamItem> {
         val openai = OpenAI(token = apiKey)
 
@@ -79,6 +80,7 @@ class ChatGPTService {
             val argument =
                 f.map { it.choices.first().delta.functionCall?.argumentsOrNull ?: "" }.toList().joinToString("")
             logger.info("ARGUMENT: ${funcall.name} $argument")
+            progressUpdate("Running function: ${funcall.name}: $argument")
 
              when (funcall.name) {
                 "fetch_url" -> {
@@ -98,6 +100,7 @@ class ChatGPTService {
                     } catch (e: Exception) {
                         "Failed to fetch content: ${e.message}"
                     }
+                    progressUpdate("Calling OpenAI API again...")
 
                     val funcallMsg = ChatMessage(
                         role = ChatRole.Function,

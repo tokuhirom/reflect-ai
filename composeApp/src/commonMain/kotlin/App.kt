@@ -123,6 +123,7 @@ fun App(
     MaterialTheme {
         var message by remember { mutableStateOf(TextFieldValue("")) }
         var conversation by remember { mutableStateOf(initialConversation) }
+        var progressIndicator by remember { mutableStateOf(TextFieldValue("")) }
         val lazyListState = rememberLazyListState()
 
         fun sendMessage() {
@@ -152,8 +153,10 @@ fun App(
                             config.prompt,
                             conversation.toList()
                                 .filter { it.role != ChatLogRole.Error }
-                                .map { it.toChatMessage() }
-                        ).onCompletion {
+                                .map { it.toChatMessage() },
+                        ) {
+                            progressIndicator = TextFieldValue(it)
+                        }.onCompletion {
                             println("chatCompletions complete.")
                             updateMessage("", ChatLogRole.AI, false)
                             chatLogRepository.saveConversations(conversation)
@@ -254,6 +257,10 @@ fun App(
                                 ) {
                                     Text("\uD83D\uDCCB")
                                 }
+                            }
+
+                            if (progressIndicator.text.isNotEmpty() && item.inProgress) {
+                                Text(progressIndicator.text, color = Color.Gray)
                             }
 
                             renderTextBlock(item)
