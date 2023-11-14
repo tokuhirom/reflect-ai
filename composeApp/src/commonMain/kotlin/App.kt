@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
 import model.ChatLogMessage
 import model.ChatLogRole
@@ -127,14 +128,15 @@ fun App(
                 message = TextFieldValue("")
 
                 CoroutineScope(Dispatchers.Main).launch {
-                    var current = ChatLogMessage(ChatLogRole.AI, "")
+                    var current = ChatLogMessage(ChatLogRole.AI, "", inProgress = true)
                     conversation += current
 
-                    fun updateMessage(msg: String, role: ChatLogRole) {
+                    fun updateMessage(msg: String, role: ChatLogRole, inProgress: Boolean = false) {
                         current = ChatLogMessage(
                             role,
                             current.message + msg,
                             current.id,
+                            inProgress,
                             current.timestamp
                         )
                         conversation = conversation.filter { it.id != current.id } + current
@@ -148,8 +150,11 @@ fun App(
                             conversation.toList()
                                 .filter { it.role != ChatLogRole.Error }
                                 .map { it.toChatMessage() }
-                        ).collect {
-                            updateMessage(it, ChatLogRole.AI)
+                        ).onCompletion {
+                            println("chatCompletions complete.")
+                            updateMessage("", ChatLogRole.AI, false)
+                        }.collect {
+                            updateMessage(it, ChatLogRole.AI, true)
                             chatLogRepository.saveConversations(conversation)
                         }
                     } catch (e: Exception) {
@@ -200,10 +205,14 @@ fun App(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(
-                                when (item.role) {
-                                    ChatLogRole.User -> Color.White
-                                    ChatLogRole.AI -> Color.LightGray
-                                    ChatLogRole.Error -> Color.LightGray
+                                if (item.inProgress) {
+                                    Color(0xFFccccEE)
+                                } else {
+                                    when (item.role) {
+                                        ChatLogRole.User -> Color.White
+                                        ChatLogRole.AI -> Color.LightGray
+                                        ChatLogRole.Error -> Color.LightGray
+                                    }
                                 }
                             )
                             .padding(16.dp)
@@ -265,7 +274,6 @@ fun App(
     }
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun renderTextBlock(item: ChatLogMessage) {
     splitIntoMarkdownBlocks(item.message).forEach { block ->

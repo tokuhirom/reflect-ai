@@ -13,6 +13,7 @@ data class ChatLogMessage(
     val role: ChatLogRole,
     var message: String,
     val id: String = UUID.randomUUID().toString(),
+    val inProgress: Boolean = false,
     val timestamp: Instant = Instant.now(),
 ) {
     fun toChatMessage(): ChatMessage {
