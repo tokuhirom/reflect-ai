@@ -28,7 +28,7 @@ class ChatGPTService {
         // we must take 500 tokens for response.
         // https://platform.openai.com/docs/models/gpt-3-5
         val tokenizer = aiModel.tokenizer
-        var remainTokens = aiModel.maxTokens - tokenizer.encode(prompt).size - 1000
+        var remainTokens = aiModel.maxTokens - tokenizer.encode(prompt).size - (aiModel.maxTokens / 8)
         val usingMessages = mutableListOf<ChatMessage>()
         for (chatMessage in messages.reversed()) {
             val tokens = tokenizer.encode(chatMessage.content!!).size
