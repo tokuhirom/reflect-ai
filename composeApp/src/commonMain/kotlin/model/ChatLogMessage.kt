@@ -13,6 +13,12 @@ data class ChatLogMessage(
     val role: ChatLogRole,
     var message: String,
     val id: String = UUID.randomUUID().toString(),
+    /**
+     * The name of the author of this message.
+     * [name] is required if role is `[ChatRole.Function], and it should be the name of the function whose response is
+     * in the [content]. May contain a-z, A-Z, 0-9, and underscores, with a maximum length of 64 characters.
+     */
+    val name: String? = null,
     val inProgress: Boolean = false,
     val timestamp: Instant = Instant.now(),
 ) {
@@ -22,8 +28,10 @@ data class ChatLogMessage(
                 ChatLogRole.AI -> ChatRole.Assistant
                 ChatLogRole.Error -> ChatRole.System
                 ChatLogRole.User -> ChatRole.User
+                ChatLogRole.Function -> ChatRole.Function
             },
-            content = message
+            content = message,
+            name = name,
         )
     }
 }
@@ -32,4 +40,5 @@ enum class ChatLogRole {
     AI,
     User,
     Error,
+    Function,
 }

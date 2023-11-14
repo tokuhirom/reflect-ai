@@ -44,6 +44,8 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import chatgpt.ChatGPTService
+import chatgpt.FunctionChatCompletionStreamItem
+import chatgpt.StringChatCompletionStreamItem
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -137,8 +139,8 @@ fun App(
                             role,
                             current.message + msg,
                             current.id,
-                            inProgress,
-                            current.timestamp
+                            inProgress = inProgress,
+                            timestamp = current.timestamp
                         )
                         conversation = conversation.filter { it.id != current.id } + current
                     }
@@ -154,8 +156,20 @@ fun App(
                         ).onCompletion {
                             println("chatCompletions complete.")
                             updateMessage("", ChatLogRole.AI, false)
-                        }.collect {
-                            updateMessage(it, ChatLogRole.AI, true)
+                            chatLogRepository.saveConversations(conversation)
+                        }.collect {item ->
+                            when (item) {
+                                is StringChatCompletionStreamItem -> {
+                                    updateMessage(item.content, ChatLogRole.AI, true)
+                                }
+
+                                is FunctionChatCompletionStreamItem -> {
+                                    conversation = conversation.filter { it.id != current.id } + ChatLogMessage(
+                                        ChatLogRole.Function,
+                                        item.chatMessage.content!!,
+                                        name = item.chatMessage.name)  + current
+                                }
+                            }
                             chatLogRepository.saveConversations(conversation)
                         }
                     } catch (e: Exception) {
@@ -213,6 +227,7 @@ fun App(
                                         ChatLogRole.User -> Color.White
                                         ChatLogRole.AI -> Color.LightGray
                                         ChatLogRole.Error -> Color.LightGray
+                                        ChatLogRole.Function -> Color.LightGray
                                     }
                                 }
                             )
@@ -317,6 +332,7 @@ private fun renderTextBlock(block: MarkdownBlock, role: ChatLogRole) {
                 color = when (role) {
                     ChatLogRole.User -> Color.Black
                     ChatLogRole.AI -> Color.Black
+                    ChatLogRole.Function -> Color.Gray
                     ChatLogRole.Error -> Color(0xa0003000)
                 }
             ),

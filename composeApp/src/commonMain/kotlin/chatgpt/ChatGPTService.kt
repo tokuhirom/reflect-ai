@@ -23,6 +23,16 @@ import org.jsoup.Jsoup
 import org.slf4j.LoggerFactory
 import truncateAt
 
+sealed class ChatCompletionStreamItem
+
+data class StringChatCompletionStreamItem(
+    val content: String
+) : ChatCompletionStreamItem()
+
+data class FunctionChatCompletionStreamItem(
+    val chatMessage: ChatMessage
+) : ChatCompletionStreamItem()
+
 class ChatGPTService {
     private val logger = LoggerFactory.getLogger(javaClass)
     private val objectMapper = jacksonObjectMapper()
@@ -35,7 +45,7 @@ class ChatGPTService {
         aiModel: AIModel,
         prompt: String,
         messages: List<ChatMessage>
-    ): Flow<String> {
+    ): Flow<ChatCompletionStreamItem> {
         val openai = OpenAI(token = apiKey)
 
         // gpt-3.5-turbo is max 4,097 tokens.
@@ -65,12 +75,12 @@ class ChatGPTService {
 
         val firstItem = f.take(1).first()
         val funcall = firstItem.choices.first().delta.functionCall
-        return if (funcall != null) {
+        val (funcallMessage, chatCompletionChunkFlow) = if (funcall != null) {
             val argument =
                 f.map { it.choices.first().delta.functionCall?.argumentsOrNull ?: "" }.toList().joinToString("")
             logger.info("ARGUMENT: ${funcall.name} $argument")
 
-            val funcallMsg = when (funcall.name) {
+             when (funcall.name) {
                 "fetch_url" -> {
                     val args = objectMapper.readValue<FetchUrlArgument>(argument)
                     val url = args.url
@@ -85,42 +95,52 @@ class ChatGPTService {
                         "Unsupported content type: $contentType"
                     }
 
-                    ChatMessage(
+                    val funcallMsg = ChatMessage(
                         role = ChatRole.Function,
                         name = funcall.name,
                         content = content.truncateAt(
                             remainTokens - tokenizer.encode(messages.last().content!!).size
                         ),
                     )
+
+                    val usingMessages2 =
+                        getMessagesByTokenCount(
+                            messages,
+                            tokenizer,
+                            remainTokens - tokenizer.encode(funcallMsg.content!!).size
+                        )
+                    funcallMsg to openai.chatCompletions(
+                        ChatCompletionRequest(
+                            model = aiModel.modelId,
+                            messages = listOf(
+                                ChatMessage(
+                                    role = ChatRole.System,
+                                    content = prompt
+                                ),
+                            ) + usingMessages2 + listOf(funcallMsg),
+                        )
+                    )
                 }
 
                 else -> {
-                    TODO("Unknown function call: ${funcall.name}")
+                    throw RuntimeException("Unknown function call: ${funcall.name}")
                 }
             }
-
-            val usingMessages2 =
-                getMessagesByTokenCount(
-                    messages,
-                    tokenizer,
-                    remainTokens - tokenizer.encode(funcallMsg.content!!).size
-                )
-            openai.chatCompletions(
-                ChatCompletionRequest(
-                    model = aiModel.modelId,
-                    messages = listOf(
-                        ChatMessage(
-                            role = ChatRole.System,
-                            content = prompt
-                        ),
-                    ) + usingMessages2 + listOf(funcallMsg),
-                )
-            )
         } else {
-            listOf(flowOf(firstItem), f).merge()
-        }.map { logs ->
-            logs.choices.firstOrNull()?.delta?.content ?: ""
+            null to listOf(flowOf(firstItem), f).merge()
         }
+
+        val head = if (funcallMessage != null) {
+            listOf<Flow<ChatCompletionStreamItem>>(flowOf(FunctionChatCompletionStreamItem(funcallMessage)))
+        } else {
+            emptyList()
+        }
+        val result : Flow<ChatCompletionStreamItem> = (head + listOf(
+            chatCompletionChunkFlow.map { logs ->
+                StringChatCompletionStreamItem(logs.choices.firstOrNull()?.delta?.content ?: "")
+            }
+        )).merge()
+        return result
     }
 
     private fun getMessagesByTokenCount(
