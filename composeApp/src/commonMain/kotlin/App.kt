@@ -216,6 +216,10 @@ fun App(
 
             LazyColumn(modifier = Modifier.weight(1f), state = lazyListState) {
                 items(conversation) { item ->
+                    if (item.role == ChatLogRole.Function) {
+                        return@items
+                    }
+
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()

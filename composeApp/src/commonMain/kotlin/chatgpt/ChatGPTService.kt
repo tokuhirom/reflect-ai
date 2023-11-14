@@ -87,12 +87,16 @@ class ChatGPTService {
                     // fetch content by url using ktor.
                     val response = ktorClient.get(url)
                     val contentType = response.headers["content-type"] ?: "application/octet-stream"
-                    val content = if (contentType.contains("text/html")) {
-                        Jsoup.parse(response.body<String>()).text()
-                    } else if (contentType.contains("text")) {
-                        response.body<String>()
-                    } else {
-                        "Unsupported content type: $contentType"
+                    val content = try {
+                        if (contentType.contains("text/html")) {
+                            Jsoup.parse(response.body<String>()).text()
+                        } else if (contentType.contains("text")) {
+                            response.body<String>()
+                        } else {
+                            "Unsupported content type: $contentType"
+                        }
+                    } catch (e: Exception) {
+                        "Failed to fetch content: ${e.message}"
                     }
 
                     val funcallMsg = ChatMessage(
