@@ -179,7 +179,11 @@ fun App(
                         }
                     } catch (e: Exception) {
                         logger.error("Got an error : $e", e)
-                        updateMessage(e.message ?: "Got an error : $e", ChatLogRole.Error)
+                        updateMessage(if (e.message != null) {
+                            "${e.javaClass.canonicalName} ${e.message}"
+                        } else {
+                            "Got an error : $e"
+                                                                                }, ChatLogRole.Error)
                         chatLogRepository.saveConversations(conversation)
                     }
                 }

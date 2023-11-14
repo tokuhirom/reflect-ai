@@ -84,12 +84,13 @@ class ChatGPTService {
 
              when (funcall.name) {
                 "fetch_url" -> {
-                    val args = objectMapper.readValue<FetchUrlArgument>(argument)
-                    val url = args.url
-                    // fetch content by url using ktor.
-                    val response = ktorClient.get(url)
-                    val contentType = response.headers["content-type"] ?: "application/octet-stream"
                     val content = try {
+                        val args = objectMapper.readValue<FetchUrlArgument>(argument)
+                        val url = args.url
+                        // fetch content by url using ktor.
+                        val response = ktorClient.get(url)
+                        val contentType = response.headers["content-type"] ?: "application/octet-stream"
+
                         if (contentType.contains("text/html")) {
                             Jsoup.parse(response.body<String>()).text()
                         } else if (contentType.contains("text")) {
@@ -98,7 +99,7 @@ class ChatGPTService {
                             "Unsupported content type: $contentType"
                         }
                     } catch (e: Exception) {
-                        "Failed to fetch content: ${e.message}"
+                        "Failed to fetch content: ${e.javaClass.canonicalName} ${e.message}"
                     }
                     progressUpdate("Calling OpenAI API again...")
 
