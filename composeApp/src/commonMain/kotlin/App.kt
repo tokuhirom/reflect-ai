@@ -54,6 +54,7 @@ import kotlinx.coroutines.launch
 import model.ChatLogMessage
 import model.ChatLogRole
 import model.aiModels
+import org.slf4j.LoggerFactory
 import java.awt.Desktop
 import java.awt.Toolkit
 import java.awt.datatransfer.Clipboard
@@ -114,6 +115,7 @@ fun App(
     zoneId: ZoneId,
     configRepository: ConfigRepository
 ) {
+    val logger = LoggerFactory.getLogger("App")
     val initialConversation = chatLogRepository.loadConversations().logs
     val config = configRepository.loadSettings()
     var targetAiModel = aiModels.firstOrNull { it.name == config.defaultModelName }
@@ -176,6 +178,7 @@ fun App(
                             chatLogRepository.saveConversations(conversation)
                         }
                     } catch (e: Exception) {
+                        logger.error("Got an error : $e", e)
                         updateMessage(e.message ?: "Got an error : $e", ChatLogRole.Error)
                         chatLogRepository.saveConversations(conversation)
                     }

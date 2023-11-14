@@ -13,3 +13,5 @@ about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform
 
 - 基本的に mac で動くことだけを想定してます。
 
+- chatgpt をつかった、パーソナルアシスタント的なものを実装したい。
+  - チャット UI にこだわりはないが、一旦 chat ui っぽいやつを実装してしまった。
