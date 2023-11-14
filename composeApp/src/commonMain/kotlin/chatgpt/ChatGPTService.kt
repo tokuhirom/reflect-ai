@@ -1,10 +1,10 @@
+package chatgpt
+
 import com.aallam.ktoken.Tokenizer
-import com.aallam.openai.api.chat.ChatCompletionFunction
 import com.aallam.openai.api.chat.ChatCompletionRequest
 import com.aallam.openai.api.chat.ChatMessage
 import com.aallam.openai.api.chat.ChatRole
 import com.aallam.openai.api.chat.FunctionMode
-import com.aallam.openai.api.chat.Parameters
 import com.aallam.openai.client.OpenAI
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -18,15 +18,10 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
-import kotlinx.serialization.json.add
-import kotlinx.serialization.json.put
-import kotlinx.serialization.json.putJsonArray
-import kotlinx.serialization.json.putJsonObject
 import model.AIModel
 import org.jsoup.Jsoup
 import org.slf4j.LoggerFactory
-
-data class FetchUrlArgument(val url: String)
+import truncateAt
 
 class ChatGPTService {
     private val logger = LoggerFactory.getLogger(javaClass)
@@ -63,23 +58,7 @@ class ChatGPTService {
                 ) + usingMessages,
                 functionCall = FunctionMode.Auto,
                 functions = listOf(
-                    ChatCompletionFunction(
-                        "fetch_url",
-                        "Fetch content by URL",
-                        Parameters.buildJsonObject {
-                            put("type", "object")
-                            putJsonObject("properties") {
-                                putJsonObject("url") {
-                                    put("type", "string")
-                                    put("format", "uri")
-                                    put("description", "URL to fetch")
-                                }
-                            }
-                            putJsonArray("required") {
-                                add("url")
-                            }
-                        }
-                    )
+                    fetchUrCompletionFunction,
                 )
             )
         )
