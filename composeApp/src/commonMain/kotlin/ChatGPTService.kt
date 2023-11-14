@@ -86,10 +86,10 @@ class ChatGPTService {
 
         val firstItem = f.take(1).first()
         val funcall = firstItem.choices.first().delta.functionCall
-        if (funcall != null) {
+        return if (funcall != null) {
             val argument =
                 f.map { it.choices.first().delta.functionCall?.argumentsOrNull ?: "" }.toList().joinToString("")
-            println("ARGUMENT: ${funcall.name} $argument")
+            logger.info("ARGUMENT: ${funcall.name} $argument")
 
             val funcallMsg = when (funcall.name) {
                 "fetch_url" -> {
@@ -126,7 +126,7 @@ class ChatGPTService {
                     tokenizer,
                     remainTokens - tokenizer.encode(funcallMsg.content!!).size
                 )
-            return openai.chatCompletions(
+            openai.chatCompletions(
                 ChatCompletionRequest(
                     model = aiModel.modelId,
                     messages = listOf(
@@ -136,13 +136,11 @@ class ChatGPTService {
                         ),
                     ) + usingMessages2 + listOf(funcallMsg),
                 )
-            ).map { logs ->
-                logs.choices.firstOrNull()?.delta?.content ?: ""
-            }
+            )
         } else {
-            return listOf(flowOf(firstItem), f).merge().map { logs ->
-                logs.choices.firstOrNull()?.delta?.content ?: ""
-            }
+            listOf(flowOf(firstItem), f).merge()
+        }.map { logs ->
+            logs.choices.firstOrNull()?.delta?.content ?: ""
         }
     }
 
