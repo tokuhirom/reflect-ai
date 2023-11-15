@@ -1,11 +1,13 @@
 package chatgpt
 
 import com.aallam.ktoken.Tokenizer
+import com.aallam.openai.api.chat.ChatCompletionChunk
 import com.aallam.openai.api.chat.ChatCompletionRequest
 import com.aallam.openai.api.chat.ChatMessage
 import com.aallam.openai.api.chat.ChatRole
 import com.aallam.openai.api.chat.FunctionMode
 import com.aallam.openai.client.OpenAI
+import feature.fetchtermdefinition.FetchTermDefinitionFunction
 import feature.fetchurl.FetchURLFunction
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -16,6 +18,10 @@ import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 import model.AIModel
 import org.slf4j.LoggerFactory
+
+private fun ChatCompletionChunk.toChatCompletionStreamItem(): ChatCompletionStreamItem {
+    return StringChatCompletionStreamItem(this.choices.firstOrNull()?.delta?.content ?: "")
+}
 
 sealed class ChatCompletionStreamItem
 
@@ -30,6 +36,7 @@ data class FunctionChatCompletionStreamItem(
 class ChatGPTService {
     private val logger = LoggerFactory.getLogger(javaClass)
     private val fetchUrlFunction = FetchURLFunction()
+    private val fetchTermDefinitionFunction = FetchTermDefinitionFunction()
 
     suspend fun sendMessage(
         apiKey: String,
@@ -62,21 +69,28 @@ class ChatGPTService {
                 functionCall = FunctionMode.Auto,
                 functions = listOf(
                     fetchUrlFunction.definition,
+                    fetchTermDefinitionFunction.definition,
                 )
             )
         )
 
         val firstItem = f.take(1).first()
         val funcall = firstItem.choices.first().delta.functionCall
-        val (funcallMessage, chatCompletionChunkFlow) = if (funcall != null) {
+        if (funcall != null) {
             val argument =
                 f.map { it.choices.first().delta.functionCall?.argumentsOrNull ?: "" }.toList().joinToString("")
             logger.info("ARGUMENT: ${funcall.name} $argument")
             progressUpdate("Running function: ${funcall.name}: $argument")
 
-             val funcallMsg = when (funcall.name) {
-                 fetchUrlFunction.name -> {
+            val funcallMsg = when (funcall.name) {
+                fetchUrlFunction.name -> {
                     fetchUrlFunction.callFunction(
+                        argument,
+                        remainTokens - tokenizer.encode(messages.last().content!!).size
+                    )
+                }
+                fetchTermDefinitionFunction.name -> {
+                    fetchTermDefinitionFunction.callFunction(
                         argument,
                         remainTokens - tokenizer.encode(messages.last().content!!).size
                     )
@@ -95,7 +109,7 @@ class ChatGPTService {
                     tokenizer,
                     remainTokens - tokenizer.encode(funcallMsg.content!!).size
                 )
-            funcallMsg to openai.chatCompletions(
+            val chatCompletionChunkFlow = openai.chatCompletions(
                 ChatCompletionRequest(
                     model = aiModel.modelId,
                     messages = listOf(
@@ -106,21 +120,19 @@ class ChatGPTService {
                     ) + usingMessages2 + listOf(funcallMsg),
                 )
             )
-        } else {
-            null to listOf(flowOf(firstItem), f).merge()
-        }
 
-        val head = if (funcallMessage != null) {
-            listOf<Flow<ChatCompletionStreamItem>>(flowOf(FunctionChatCompletionStreamItem(funcallMessage)))
+            return  (
+                listOf(flowOf(FunctionChatCompletionStreamItem(funcallMsg)))
+                + listOf(
+                chatCompletionChunkFlow.map { logs ->
+                    logs.toChatCompletionStreamItem()
+                }
+            )).merge()
         } else {
-            emptyList()
-        }
-        val result : Flow<ChatCompletionStreamItem> = (head + listOf(
-            chatCompletionChunkFlow.map { logs ->
-                StringChatCompletionStreamItem(logs.choices.firstOrNull()?.delta?.content ?: "")
+            return listOf(flowOf(firstItem), f).merge().map { logs ->
+                logs.toChatCompletionStreamItem()
             }
-        )).merge()
-        return result
+        }
     }
 
 
@@ -144,3 +156,4 @@ class ChatGPTService {
         return usingMessages.reversed()
     }
 }
+
