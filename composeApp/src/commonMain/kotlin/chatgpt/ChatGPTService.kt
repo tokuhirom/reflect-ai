@@ -59,7 +59,7 @@ class ChatGPTService {
                 ) + usingMessages,
                 functionCall = FunctionMode.Auto,
                 functions = listOf(
-                    fetchUrCompletionFunction,
+                    fetchUrlFunction.definition,
                 )
             )
         )

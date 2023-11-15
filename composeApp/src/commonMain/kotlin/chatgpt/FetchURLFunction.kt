@@ -19,23 +19,6 @@ import org.jsoup.Jsoup
 import org.slf4j.LoggerFactory
 import truncateAt
 
-val fetchUrCompletionFunction = ChatCompletionFunction(
-    "fetch_url",
-    "Fetch content by URL",
-    Parameters.buildJsonObject {
-        put("type", "object")
-        putJsonObject("properties") {
-            putJsonObject("url") {
-                put("type", "string")
-                put("format", "uri")
-                put("description", "URL to fetch")
-            }
-        }
-        putJsonArray("required") {
-            add("url")
-        }
-    }
-)
 
 
 data class FetchUrlArgument(val url: String)
@@ -46,6 +29,23 @@ class FetchURLFunction {
     private val ktorClient = io.ktor.client.HttpClient() {
         install(Logging)
     }
+    val definition = ChatCompletionFunction(
+        "fetch_url",
+        "Fetch content by URL",
+        Parameters.buildJsonObject {
+            put("type", "object")
+            putJsonObject("properties") {
+                putJsonObject("url") {
+                    put("type", "string")
+                    put("format", "uri")
+                    put("description", "URL to fetch")
+                }
+            }
+            putJsonArray("required") {
+                add("url")
+            }
+        }
+    )
 
     suspend fun callFunction(
         argumentJson: String,
