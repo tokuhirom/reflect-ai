@@ -1,10 +1,8 @@
 package chatgpt
 
-import com.aallam.ktoken.Tokenizer
 import com.aallam.openai.api.chat.ChatCompletionFunction
 import com.aallam.openai.api.chat.ChatMessage
 import com.aallam.openai.api.chat.ChatRole
-import com.aallam.openai.api.chat.FunctionCall
 import com.aallam.openai.api.chat.Parameters
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -20,7 +18,6 @@ import org.slf4j.LoggerFactory
 import truncateAt
 
 
-
 data class FetchUrlArgument(val url: String)
 
 class FetchURLFunction {
@@ -29,8 +26,10 @@ class FetchURLFunction {
     private val ktorClient = io.ktor.client.HttpClient() {
         install(Logging)
     }
+    val name = "fetch_url"
+
     val definition = ChatCompletionFunction(
-        "fetch_url",
+        name,
         "Fetch content by URL",
         Parameters.buildJsonObject {
             put("type", "object")
@@ -50,10 +49,7 @@ class FetchURLFunction {
     suspend fun callFunction(
         argumentJson: String,
         progressUpdate: (String) -> Unit,
-        funcall: FunctionCall,
         remainTokens: Int,
-        tokenizer: Tokenizer,
-        messages: List<ChatMessage>
     ): ChatMessage {
         val content = try {
             val args = objectMapper.readValue<FetchUrlArgument>(argumentJson)
@@ -76,10 +72,8 @@ class FetchURLFunction {
 
         return ChatMessage(
             role = ChatRole.Function,
-            name = funcall.name,
-            content = content.truncateAt(
-                remainTokens - tokenizer.encode(messages.last().content!!).size
-            ),
+            name = name,
+            content = content.truncateAt(remainTokens),
         )
     }
 }

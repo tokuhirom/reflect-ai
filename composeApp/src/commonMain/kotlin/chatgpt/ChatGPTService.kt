@@ -74,7 +74,11 @@ class ChatGPTService {
 
              val funcallMsg = when (funcall.name) {
                 "fetch_url" -> {
-                    fetchUrlFunction.callFunction(argument, progressUpdate, funcall, remainTokens, tokenizer, messages)
+                    fetchUrlFunction.callFunction(
+                        argument,
+                        progressUpdate,
+                        remainTokens - tokenizer.encode(messages.last().content!!).size
+                    )
                 }
 
                 else -> {
