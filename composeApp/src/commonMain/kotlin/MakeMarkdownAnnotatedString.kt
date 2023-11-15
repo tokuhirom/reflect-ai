@@ -8,7 +8,7 @@ import androidx.compose.ui.text.withStyle
 
 fun makeMarkdownAnnotatedString(inputText: String): AnnotatedString {
     val pattern =
-        """(https?://[^\s\]]+)|(\*\*[^*\n]*?\*\*)""".toRegex(RegexOption.DOT_MATCHES_ALL)
+        """(https?://[-_.!~*'()a-zA-Z0-9;/?:@&=+${'$'},%#]+)|(\*\*[^*\n]*?\*\*(?![^\s\]]))""".toRegex(RegexOption.DOT_MATCHES_ALL)
     val matches = pattern.findAll(inputText).toList()
 
     val annotatedText = buildAnnotatedString {
