@@ -1,4 +1,4 @@
-package feature.fetchtermdefinition
+package feature.termdefinition
 
 import com.aallam.openai.api.chat.ChatCompletionFunction
 import com.aallam.openai.api.chat.ChatMessage
@@ -18,6 +18,7 @@ data class FetchTermDefinitionArgument(val word: String)
 class FetchTermDefinitionFunction : OpenAIFunction {
     override val name = "fetch_term_definition"
     private val objectMapper = jacksonObjectMapper()
+    private val teamDefinitionRepository = TermDefinitionRepository()
     override val definition = ChatCompletionFunction(
         name,
         """This function fetches the definition of a given term and, if available, provides a URL for further
@@ -45,24 +46,13 @@ class FetchTermDefinitionFunction : OpenAIFunction {
         argumentJson: String,
         remainTokens: Int,
     ): ChatMessage {
-        val content = try {
-            val args = objectMapper.readValue<FetchTermDefinitionArgument>(argumentJson)
-            when (args.word) {
-                "yappo" -> {
-                    "Yappo は Osawa Kazuhiro の愛称です。"
-                }
-                else -> {
-                    "Unknown word ${args.word}"
-                }
-            }
-        } catch (e: Exception) {
-            "Failed to fetch content: ${e.javaClass.canonicalName} ${e.message}"
-        }
+        val args = objectMapper.readValue<FetchTermDefinitionArgument>(argumentJson)
+        val definition = teamDefinitionRepository.getWord(args.word)
 
         return ChatMessage(
             role = ChatRole.Function,
             name = name,
-            content = content.truncateAt(remainTokens),
+            content = definition.truncateAt(remainTokens),
         )
     }
 }

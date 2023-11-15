@@ -7,9 +7,9 @@ import com.aallam.openai.api.chat.ChatMessage
 import com.aallam.openai.api.chat.ChatRole
 import com.aallam.openai.api.chat.FunctionMode
 import com.aallam.openai.client.OpenAI
-import feature.OpenAIFunction
-import feature.fetchtermdefinition.FetchTermDefinitionFunction
 import feature.fetchurl.FetchURLFunction
+import feature.termdefinition.FetchTermDefinitionFunction
+import feature.termdefinition.RegisterTermDefinitionFunction
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
@@ -36,9 +36,10 @@ data class FunctionChatCompletionStreamItem(
 
 class ChatGPTService {
     private val logger = LoggerFactory.getLogger(javaClass)
-    private val functions = listOf<OpenAIFunction>(
+    private val functions = listOf(
         FetchURLFunction(),
         FetchTermDefinitionFunction(),
+        RegisterTermDefinitionFunction(),
     )
 
     suspend fun sendMessage(
@@ -82,14 +83,23 @@ class ChatGPTService {
             logger.info("ARGUMENT: ${funcall.name} $argument")
             progressUpdate("Running function: ${funcall.name}: $argument")
 
-            val funcallMsg = functions.firstOrNull { it.name == funcall.name }?.callFunction(
-                argument,
-                remainTokens - tokenizer.encode(messages.last().content!!).size
-            ) ?: ChatMessage(
-                role = ChatRole.Function,
-                name = funcall.name,
-                content = "Unknown function: ${funcall.name}",
-            )
+            val funcallMsg = try {
+                functions.firstOrNull { it.name == funcall.name }?.callFunction(
+                    argument,
+                    remainTokens - tokenizer.encode(messages.last().content!!).size
+                ) ?: ChatMessage(
+                    role = ChatRole.Function,
+                    name = funcall.name,
+                    content = "Unknown function: ${funcall.name}",
+                )
+            } catch (e: Exception) {
+                logger.error("Failed to call function: ${funcall.name}", e)
+                ChatMessage(
+                    role = ChatRole.Function,
+                    name = funcall.name,
+                    content = "Cannot call function: ${funcall.name}(${e.javaClass.canonicalName} ${e.message})}",
+                )
+            }
 
             progressUpdate("Calling OpenAI API again...")
 

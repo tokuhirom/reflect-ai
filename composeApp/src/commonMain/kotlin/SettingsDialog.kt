@@ -56,7 +56,7 @@ fun SettingsDialog(
                     onDialogClose()
                 }
             ) {
-                Text("保存")
+                Text("Save")
             }
         }
     }
