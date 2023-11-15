@@ -1,4 +1,4 @@
-package chatgpt
+package feature.fetchurl
 
 import com.aallam.openai.api.chat.ChatCompletionFunction
 import com.aallam.openai.api.chat.ChatMessage

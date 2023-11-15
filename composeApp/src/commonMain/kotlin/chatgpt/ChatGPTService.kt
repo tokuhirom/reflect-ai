@@ -6,6 +6,7 @@ import com.aallam.openai.api.chat.ChatMessage
 import com.aallam.openai.api.chat.ChatRole
 import com.aallam.openai.api.chat.FunctionMode
 import com.aallam.openai.client.OpenAI
+import feature.fetchurl.FetchURLFunction
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
@@ -74,7 +75,7 @@ class ChatGPTService {
             progressUpdate("Running function: ${funcall.name}: $argument")
 
              val funcallMsg = when (funcall.name) {
-                "fetch_url" -> {
+                 fetchUrlFunction.name -> {
                     fetchUrlFunction.callFunction(
                         argument,
                         remainTokens - tokenizer.encode(messages.last().content!!).size
