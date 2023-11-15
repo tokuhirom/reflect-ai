@@ -6,6 +6,7 @@ import com.aallam.openai.api.chat.ChatRole
 import com.aallam.openai.api.chat.Parameters
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import feature.OpenAIFunction
 import io.ktor.client.call.*
 import io.ktor.client.plugins.logging.*
 import io.ktor.client.request.*
@@ -20,15 +21,15 @@ import truncateAt
 
 data class FetchUrlArgument(val url: String)
 
-class FetchURLFunction {
+class FetchURLFunction  : OpenAIFunction {
     private val logger = LoggerFactory.getLogger(javaClass)
     private val objectMapper = jacksonObjectMapper()
     private val ktorClient = io.ktor.client.HttpClient() {
         install(Logging)
     }
-    val name = "fetch_url"
+    override val name = "fetch_url"
 
-    val definition = ChatCompletionFunction(
+    override val definition = ChatCompletionFunction(
         name,
         "Fetch content by URL",
         Parameters.buildJsonObject {
@@ -46,7 +47,7 @@ class FetchURLFunction {
         }
     )
 
-    suspend fun callFunction(
+    override  suspend fun callFunction(
         argumentJson: String,
         remainTokens: Int,
     ): ChatMessage {

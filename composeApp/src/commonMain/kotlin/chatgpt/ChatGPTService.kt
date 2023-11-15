@@ -7,6 +7,7 @@ import com.aallam.openai.api.chat.ChatMessage
 import com.aallam.openai.api.chat.ChatRole
 import com.aallam.openai.api.chat.FunctionMode
 import com.aallam.openai.client.OpenAI
+import feature.OpenAIFunction
 import feature.fetchtermdefinition.FetchTermDefinitionFunction
 import feature.fetchurl.FetchURLFunction
 import kotlinx.coroutines.flow.Flow
@@ -35,8 +36,10 @@ data class FunctionChatCompletionStreamItem(
 
 class ChatGPTService {
     private val logger = LoggerFactory.getLogger(javaClass)
-    private val fetchUrlFunction = FetchURLFunction()
-    private val fetchTermDefinitionFunction = FetchTermDefinitionFunction()
+    private val functions = listOf<OpenAIFunction>(
+        FetchURLFunction(),
+        FetchTermDefinitionFunction(),
+    )
 
     suspend fun sendMessage(
         apiKey: String,
@@ -67,10 +70,7 @@ class ChatGPTService {
                     )
                 ) + usingMessages,
                 functionCall = FunctionMode.Auto,
-                functions = listOf(
-                    fetchUrlFunction.definition,
-                    fetchTermDefinitionFunction.definition,
-                )
+                functions = functions.map { it.definition }.toList()
             )
         )
 
@@ -82,24 +82,14 @@ class ChatGPTService {
             logger.info("ARGUMENT: ${funcall.name} $argument")
             progressUpdate("Running function: ${funcall.name}: $argument")
 
-            val funcallMsg = when (funcall.name) {
-                fetchUrlFunction.name -> {
-                    fetchUrlFunction.callFunction(
-                        argument,
-                        remainTokens - tokenizer.encode(messages.last().content!!).size
-                    )
-                }
-                fetchTermDefinitionFunction.name -> {
-                    fetchTermDefinitionFunction.callFunction(
-                        argument,
-                        remainTokens - tokenizer.encode(messages.last().content!!).size
-                    )
-                }
-
-                else -> {
-                    throw RuntimeException("Unknown function call: ${funcall.name}")
-                }
-            }
+            val funcallMsg = functions.firstOrNull { it.name == funcall.name }?.callFunction(
+                argument,
+                remainTokens - tokenizer.encode(messages.last().content!!).size
+            ) ?: ChatMessage(
+                role = ChatRole.Function,
+                name = funcall.name,
+                content = "Unknown function: ${funcall.name}",
+            )
 
             progressUpdate("Calling OpenAI API again...")
 
