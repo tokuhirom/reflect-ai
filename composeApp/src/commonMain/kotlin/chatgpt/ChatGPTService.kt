@@ -6,11 +6,6 @@ import com.aallam.openai.api.chat.ChatMessage
 import com.aallam.openai.api.chat.ChatRole
 import com.aallam.openai.api.chat.FunctionMode
 import com.aallam.openai.client.OpenAI
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
-import io.ktor.client.call.*
-import io.ktor.client.plugins.logging.*
-import io.ktor.client.request.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
@@ -19,9 +14,7 @@ import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 import model.AIModel
-import org.jsoup.Jsoup
 import org.slf4j.LoggerFactory
-import truncateAt
 
 sealed class ChatCompletionStreamItem
 
@@ -35,10 +28,7 @@ data class FunctionChatCompletionStreamItem(
 
 class ChatGPTService {
     private val logger = LoggerFactory.getLogger(javaClass)
-    private val objectMapper = jacksonObjectMapper()
-    private val ktorClient = io.ktor.client.HttpClient() {
-        install(Logging)
-    }
+    private val fetchUrlFunction = FetchURLFunction()
 
     suspend fun sendMessage(
         apiKey: String,
@@ -82,58 +72,33 @@ class ChatGPTService {
             logger.info("ARGUMENT: ${funcall.name} $argument")
             progressUpdate("Running function: ${funcall.name}: $argument")
 
-             when (funcall.name) {
+             val funcallMsg = when (funcall.name) {
                 "fetch_url" -> {
-                    val content = try {
-                        val args = objectMapper.readValue<FetchUrlArgument>(argument)
-                        val url = args.url
-                        // fetch content by url using ktor.
-                        val response = ktorClient.get(url)
-                        val contentType = response.headers["content-type"] ?: "application/octet-stream"
-
-                        if (contentType.contains("text/html")) {
-                            Jsoup.parse(response.body<String>()).text()
-                        } else if (contentType.contains("text")) {
-                            response.body<String>()
-                        } else {
-                            "Unsupported content type: $contentType"
-                        }
-                    } catch (e: Exception) {
-                        "Failed to fetch content: ${e.javaClass.canonicalName} ${e.message}"
-                    }
-                    progressUpdate("Calling OpenAI API again...")
-
-                    val funcallMsg = ChatMessage(
-                        role = ChatRole.Function,
-                        name = funcall.name,
-                        content = content.truncateAt(
-                            remainTokens - tokenizer.encode(messages.last().content!!).size
-                        ),
-                    )
-
-                    val usingMessages2 =
-                        getMessagesByTokenCount(
-                            messages,
-                            tokenizer,
-                            remainTokens - tokenizer.encode(funcallMsg.content!!).size
-                        )
-                    funcallMsg to openai.chatCompletions(
-                        ChatCompletionRequest(
-                            model = aiModel.modelId,
-                            messages = listOf(
-                                ChatMessage(
-                                    role = ChatRole.System,
-                                    content = prompt
-                                ),
-                            ) + usingMessages2 + listOf(funcallMsg),
-                        )
-                    )
+                    fetchUrlFunction.callFunction(argument, progressUpdate, funcall, remainTokens, tokenizer, messages)
                 }
 
                 else -> {
                     throw RuntimeException("Unknown function call: ${funcall.name}")
                 }
             }
+
+            val usingMessages2 =
+                getMessagesByTokenCount(
+                    messages,
+                    tokenizer,
+                    remainTokens - tokenizer.encode(funcallMsg.content!!).size
+                )
+            funcallMsg to openai.chatCompletions(
+                ChatCompletionRequest(
+                    model = aiModel.modelId,
+                    messages = listOf(
+                        ChatMessage(
+                            role = ChatRole.System,
+                            content = prompt
+                        ),
+                    ) + usingMessages2 + listOf(funcallMsg),
+                )
+            )
         } else {
             null to listOf(flowOf(firstItem), f).merge()
         }
@@ -150,6 +115,7 @@ class ChatGPTService {
         )).merge()
         return result
     }
+
 
     private fun getMessagesByTokenCount(
         messages: List<ChatMessage>,
