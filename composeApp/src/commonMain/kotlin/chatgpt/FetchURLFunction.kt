@@ -48,12 +48,12 @@ class FetchURLFunction {
 
     suspend fun callFunction(
         argumentJson: String,
-        progressUpdate: (String) -> Unit,
         remainTokens: Int,
     ): ChatMessage {
         val content = try {
             val args = objectMapper.readValue<FetchUrlArgument>(argumentJson)
             val url = args.url
+
             // fetch content by url using ktor.
             val response = ktorClient.get(url)
             val contentType = response.headers["content-type"] ?: "application/octet-stream"
@@ -68,7 +68,6 @@ class FetchURLFunction {
         } catch (e: Exception) {
             "Failed to fetch content: ${e.javaClass.canonicalName} ${e.message}"
         }
-        progressUpdate("Calling OpenAI API again...")
 
         return ChatMessage(
             role = ChatRole.Function,

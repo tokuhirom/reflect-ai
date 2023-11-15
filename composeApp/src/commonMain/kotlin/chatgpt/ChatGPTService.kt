@@ -76,7 +76,6 @@ class ChatGPTService {
                 "fetch_url" -> {
                     fetchUrlFunction.callFunction(
                         argument,
-                        progressUpdate,
                         remainTokens - tokenizer.encode(messages.last().content!!).size
                     )
                 }
@@ -85,6 +84,8 @@ class ChatGPTService {
                     throw RuntimeException("Unknown function call: ${funcall.name}")
                 }
             }
+
+            progressUpdate("Calling OpenAI API again...")
 
             val usingMessages2 =
                 getMessagesByTokenCount(
