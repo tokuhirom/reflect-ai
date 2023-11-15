@@ -95,7 +95,7 @@ class ChatGPTService {
                     content = "Unknown function: ${funcall.name}",
                 )
             } catch (e: Exception) {
-                logger.error("Failed to call function: ${funcall.name}", e)
+                logger.error("Failed to call function: ${funcall.name}, args=`${argument}`", e)
                 ChatMessage(
                     role = ChatRole.Function,
                     name = funcall.name,

@@ -23,7 +23,7 @@ import java.nio.charset.StandardCharsets
 
 data class GoogleCustomSearchResponse(
     val items: List<GoogleCustomSearchItem>,
-    val socialmediaposting: List<GoogleCustomSearchSocialMediaPosting>
+    val socialmediaposting: List<GoogleCustomSearchSocialMediaPosting>?,
 )
 
 data class GoogleCustomSearchItem(val title: String, val link: String, val snippet: String)
@@ -79,13 +79,15 @@ class GoogleSearchFunction : OpenAIFunction {
             content = "Missing searchEngineId for google custom search",
         )
 
-        val response = ktorClient.get("https://customsearch.googleapis.com/customsearch/v1?key=${apiKey}&cx=${searchEngineId}&q=${URLEncoder.encode(args.query, StandardCharsets.UTF_8)}")
+        val url = "https://customsearch.googleapis.com/customsearch/v1?key=${apiKey}&cx=${searchEngineId}&q=${URLEncoder.encode(args.query, StandardCharsets.UTF_8)}"
+        logger.info("Querying google: $url")
+        val response = ktorClient.get(url)
         val json = response.bodyAsText()
         val res = objectMapper.readValue<GoogleCustomSearchResponse>(json)
 
         val content = "# Search results\n\n" + res.items.map {
             "## [${it.title}](${it.link})\n\n${it.snippet}\n\n"
-        } + "# Social media\n\n" + res.socialmediaposting.joinToString("\n\n----\n\n") {
+        } + "# Social media\n\n" + res.socialmediaposting?.joinToString("\n\n----\n\n") {
             "${it.articlebody}\n\n${it.url}\n"
         }
 
