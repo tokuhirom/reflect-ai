@@ -47,6 +47,7 @@ class ChatGPTService {
         val usingMessages = getMessagesByTokenCount(messages, tokenizer, remainTokens)
 
         println("Using model: ${aiModel.name}")
+        progressUpdate("Calling OpenAPI: ${aiModel.name}(using ${usingMessages.size} messages)")
 
         val f = openai.chatCompletions(
             ChatCompletionRequest(
