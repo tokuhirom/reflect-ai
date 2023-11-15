@@ -32,11 +32,13 @@ fun main() = application {
         App(chatGPTService, chatLogRepository, zoneId, configRepository)
 
         if (showSettingsDialog) {
-            SettingsDialog(
+            ConfigurationDialog(
                 config,
-                onSave = { prompt, apiToken ->
+                onSave = { prompt, apiToken, googleApiKey, googleSearchEngineId ->
                     config.prompt = prompt
                     config.apiToken = apiToken
+                    config.googleSearchConfig.apiKey = googleApiKey
+                    config.googleSearchConfig.searchEngineId = googleSearchEngineId
                     configRepository.saveSettings(config)
                 },
                 onDialogClose = {

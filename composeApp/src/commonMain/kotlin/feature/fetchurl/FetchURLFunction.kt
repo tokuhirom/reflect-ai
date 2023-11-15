@@ -22,7 +22,6 @@ import truncateAt
 data class FetchUrlArgument(val url: String)
 
 class FetchURLFunction  : OpenAIFunction {
-    private val logger = LoggerFactory.getLogger(javaClass)
     private val objectMapper = jacksonObjectMapper()
     private val ktorClient = io.ktor.client.HttpClient() {
         install(Logging)

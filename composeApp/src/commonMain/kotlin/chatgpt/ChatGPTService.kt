@@ -8,6 +8,7 @@ import com.aallam.openai.api.chat.ChatRole
 import com.aallam.openai.api.chat.FunctionMode
 import com.aallam.openai.client.OpenAI
 import feature.fetchurl.FetchURLFunction
+import feature.googlesearch.GoogleSearchFunction
 import feature.termdefinition.FetchTermDefinitionFunction
 import feature.termdefinition.RegisterTermDefinitionFunction
 import kotlinx.coroutines.flow.Flow
@@ -40,6 +41,7 @@ class ChatGPTService {
         FetchURLFunction(),
         FetchTermDefinitionFunction(),
         RegisterTermDefinitionFunction(),
+        GoogleSearchFunction(),
     )
 
     suspend fun sendMessage(

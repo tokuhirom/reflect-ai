@@ -3,6 +3,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Button
+import androidx.compose.material.Divider
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
@@ -18,17 +19,19 @@ import androidx.compose.ui.window.rememberDialogState
 import model.Config
 
 @Composable
-fun SettingsDialog(
+fun ConfigurationDialog(
     config: Config,
-    onSave: (String, String) -> Unit,
+    onSave: (String, String, String, String) -> Unit,
     onDialogClose: () -> Unit
 ) {
     var prompt by remember { mutableStateOf(config.prompt) }
-    var apiToken by remember { mutableStateOf(config.apiToken) }
+    var openAIApiToken by remember { mutableStateOf(config.apiToken) }
+    var googleApiKey by remember { mutableStateOf(config.googleSearchConfig.apiKey ?: "") }
+    var googleSearchEngineId by remember { mutableStateOf(config.googleSearchConfig.searchEngineId ?: "") }
 
     DialogWindow(
         onCloseRequest = onDialogClose,
-        title = "設定",
+        title = "Configuration",
         state = rememberDialogState(width = 640.dp, height = 640.dp),
         resizable = true,
     ) {
@@ -37,9 +40,9 @@ fun SettingsDialog(
         ) {
             Text("OpenAI API token:")
             TextField(
-                value = apiToken,
+                value = openAIApiToken,
                 onValueChange = {
-                    apiToken = it
+                    openAIApiToken = it
                 }
             )
             Text("Prompt：", modifier = Modifier.padding(bottom = 8.dp))
@@ -50,9 +53,23 @@ fun SettingsDialog(
                     .weight(1f)
                     .padding(bottom = 16.dp)
             )
+
+            Divider(modifier = Modifier.padding(vertical = 16.dp))
+
+            Text("Google API key:")
+            TextField(
+                value = googleApiKey,
+                onValueChange = { googleApiKey = it }
+            )
+            Text("Google Search Engine ID:")
+            TextField(
+                value = googleSearchEngineId,
+                onValueChange = { googleSearchEngineId = it }
+            )
+
             Button(
                 onClick = {
-                    onSave(prompt, apiToken)
+                    onSave(prompt, openAIApiToken, googleApiKey, googleSearchEngineId)
                     onDialogClose()
                 }
             ) {

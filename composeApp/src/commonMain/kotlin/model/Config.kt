@@ -7,5 +7,11 @@ data class Config(
         You are rugged and taciturn.
         The developer prefers Japanese. You must answer in Japanese.
         """.trimIndent(),
-    var apiToken: String = ""
+    var apiToken: String = "",
+    var googleSearchConfig : GoogleSearchConfig = GoogleSearchConfig()
+)
+
+data class GoogleSearchConfig(
+    var apiKey: String? = null,
+    var searchEngineId: String? = null,
 )
