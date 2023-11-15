@@ -12,7 +12,7 @@ fun makeMarkdownAnnotatedString(inputText: String): AnnotatedString {
     val matches = pattern.findAll(inputText).toList()
 
     val annotatedText = buildAnnotatedString {
-        matches.fold(0, { lastEnd, matchResult ->
+        matches.fold(0) { lastEnd, matchResult ->
             val matchStart = matchResult.range.first
             val matchEnd = matchResult.range.last
 
@@ -60,7 +60,7 @@ fun makeMarkdownAnnotatedString(inputText: String): AnnotatedString {
             pop()
 
             matchEnd + 1
-        })
+        }
             .let { append(inputText.substring(it)) }  // Add the rest of the text after the last match
     }
     return annotatedText
