@@ -7,10 +7,7 @@ import com.aallam.openai.api.chat.ChatMessage
 import com.aallam.openai.api.chat.ChatRole
 import com.aallam.openai.api.chat.FunctionMode
 import com.aallam.openai.client.OpenAI
-import feature.fetchurl.FetchURLFunction
-import feature.googlesearch.GoogleSearchFunction
-import feature.termdefinition.FetchTermDefinitionFunction
-import feature.termdefinition.RegisterTermDefinitionFunction
+import feature.FunctionRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
@@ -37,12 +34,7 @@ data class FunctionChatCompletionStreamItem(
 
 class ChatGPTService {
     private val logger = LoggerFactory.getLogger(javaClass)
-    private val functions = listOf(
-        FetchURLFunction(),
-        FetchTermDefinitionFunction(),
-        RegisterTermDefinitionFunction(),
-        GoogleSearchFunction(),
-    )
+    private val functionRepository = FunctionRepository()
 
     suspend fun sendMessage(
         apiKey: String,
@@ -73,7 +65,7 @@ class ChatGPTService {
                     )
                 ) + usingMessages,
                 functionCall = FunctionMode.Auto,
-                functions = functions.map { it.definition }.toList()
+                functions = functionRepository.toList()
             )
         )
 
@@ -86,7 +78,7 @@ class ChatGPTService {
             progressUpdate("Running function: ${funcall.name}: $argument")
 
             val funcallMsg = try {
-                functions.firstOrNull { it.name == funcall.name }?.callFunction(
+                functionRepository.firstOrNull { it.name == funcall.name }?.callFunction(
                     argument,
                     remainTokens - tokenizer.encode(messages.last().content!!).size
                 ) ?: ChatMessage(
