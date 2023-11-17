@@ -15,3 +15,14 @@ about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform
 
 - chatgpt をつかった、パーソナルアシスタント的なものを実装したい。
   - チャット UI にこだわりはないが、一旦 chat ui っぽいやつを実装してしまった。
+
+## Dependencies
+
+ * Java 17+
+
+## How to run
+
+    ./gradlew desktopRun  -DmainClass=MainKt
+
+で実行できます。
+
