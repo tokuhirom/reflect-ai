@@ -3,6 +3,7 @@ package feature
 import com.aallam.openai.api.chat.ChatCompletionFunction
 import feature.fetchurl.FetchURLFunction
 import feature.googlesearch.GoogleSearchFunction
+import feature.imagegen.ImageGenFunction
 import feature.termdefinition.FetchTermDefinitionFunction
 import feature.termdefinition.RegisterTermDefinitionFunction
 
@@ -12,6 +13,7 @@ class FunctionRepository {
         FetchTermDefinitionFunction(),
         RegisterTermDefinitionFunction(),
         GoogleSearchFunction(),
+        ImageGenFunction(),
     )
 
     fun toList(): List<ChatCompletionFunction> {
@@ -20,5 +22,9 @@ class FunctionRepository {
 
     fun firstOrNull(predicate: (OpenAIFunction) -> Boolean): OpenAIFunction? {
         return functions.firstOrNull { predicate(it) }
+    }
+
+    fun getByName(name: String): OpenAIFunction? {
+        return functions.firstOrNull { it.name == name }
     }
 }

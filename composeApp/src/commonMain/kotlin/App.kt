@@ -21,6 +21,8 @@ import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.SnackbarHost
+import androidx.compose.material.SnackbarHostState
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.runtime.Composable
@@ -46,6 +48,8 @@ import androidx.compose.ui.unit.dp
 import chatgpt.ChatGPTService
 import chatgpt.FunctionChatCompletionStreamItem
 import chatgpt.StringChatCompletionStreamItem
+import feature.FunctionRepository
+import feature.RendableFunction
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -113,7 +117,8 @@ fun App(
     chatGPTService: ChatGPTService,
     chatLogRepository: ChatLogRepository,
     zoneId: ZoneId,
-    configRepository: ConfigRepository
+    configRepository: ConfigRepository,
+    funcitonRepository: FunctionRepository,
 ) {
     val logger = LoggerFactory.getLogger("App")
     val initialConversation = chatLogRepository.loadConversations().logs
@@ -224,9 +229,19 @@ fun App(
                 }
             }
 
+            val snackbarHostState = SnackbarHostState()
+
+            SnackbarHost(
+                hostState = snackbarHostState,
+            )
+
             LazyColumn(modifier = Modifier.weight(1f), state = lazyListState) {
                 items(conversation) { item ->
                     if (item.role == ChatLogRole.Function) {
+                        val function = funcitonRepository.getByName(item.name!!) ?: return@items
+                        if (function is RendableFunction) {
+                            function.render(item, snackbarHostState)
+                        }
                         return@items
                     }
 

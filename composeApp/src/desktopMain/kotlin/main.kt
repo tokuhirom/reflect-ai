@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import feature.FunctionRepository
 import java.time.ZoneId
 
 fun main() = application {
@@ -25,11 +26,12 @@ fun main() = application {
     val chatGPTService = ChatGPTService()
     val configRepository = ConfigRepository()
     val config = configRepository.loadSettings()
+    val functionRepository = FunctionRepository()
 
     var showSettingsDialog by remember { mutableStateOf(false) }
 
     Window(onCloseRequest = ::exitApplication, title = "ReflectAI") {
-        App(chatGPTService, chatLogRepository, zoneId, configRepository)
+        App(chatGPTService, chatLogRepository, zoneId, configRepository, functionRepository)
 
         if (showSettingsDialog) {
             ConfigurationDialog(
