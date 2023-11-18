@@ -1,5 +1,6 @@
 package reflectai.ui
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.Box
@@ -14,6 +15,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.onClick
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.Button
@@ -51,6 +53,7 @@ import java.awt.datatransfer.StringSelection
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ColumnScope.ConversationComponent(
     chatViewModel: ChatViewModel,
@@ -103,19 +106,15 @@ fun ColumnScope.ConversationComponent(
                             )
                         )
                         Spacer(modifier = Modifier.weight(1f))
-                        Button(
-                            onClick = {
-                                // Copy text to clipboard
-                                val clipboard: Clipboard = Toolkit.getDefaultToolkit().systemClipboard
-                                val stringSelection = StringSelection(item.message)
-                                clipboard.setContents(stringSelection, stringSelection)
-                            }, colors = ButtonDefaults.buttonColors(
-                                backgroundColor = Color.Gray,
-                                contentColor = Color.White
-                            )
-                        ) {
-                            Text("\uD83D\uDCCB")
-                        }
+
+                        Text(text = "Copy", modifier = Modifier.onClick {
+                            val clipboard: Clipboard = Toolkit.getDefaultToolkit().systemClipboard
+                            val stringSelection = StringSelection(item.message)
+                            clipboard.setContents(stringSelection, stringSelection)
+                        }, style = TextStyle(
+                            fontSize = 12.sp,
+                            color = Color.Gray
+                        ))
                     }
 
                     if (chatViewModel.progressIndicator.text.isNotEmpty() && item.inProgress) {
