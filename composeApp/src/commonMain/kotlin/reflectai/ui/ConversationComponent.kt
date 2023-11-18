@@ -69,6 +69,8 @@ fun ColumnScope.ConversationComponent(
         lazyListState.scrollToEnd()
     }
 
+    // no scrollbar support on it. https://stackoverflow.com/questions/66341823/jetpack-compose-scrollbars
+    // https://developer.android.com/jetpack/androidx/compose-roadmap?hl=en
     LazyColumn(modifier = Modifier.weight(1f), state = lazyListState) {
         items(chatViewModel.conversation) { item ->
             if (item.role == ChatLogRole.Function) {
