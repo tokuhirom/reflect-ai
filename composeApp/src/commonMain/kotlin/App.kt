@@ -45,6 +45,7 @@ import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import chatgpt.ChatGPTService
 import chatgpt.FunctionChatCompletionStreamItem
 import chatgpt.StringChatCompletionStreamItem
@@ -66,6 +67,7 @@ import java.awt.datatransfer.StringSelection
 import java.net.URI
 import java.text.NumberFormat
 import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.*
 import javax.swing.JOptionPane
 
@@ -126,6 +128,7 @@ fun App(
     var targetAiModel = aiModels.firstOrNull { it.name == config.defaultModelName }
         ?: aiModels.first()
     val numberFormat = NumberFormat.getNumberInstance(Locale.getDefault())
+    val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
 
     MaterialTheme {
         var message by remember { mutableStateOf(TextFieldValue("")) }
@@ -264,7 +267,13 @@ fun App(
                     ) {
                         Column {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(item.timestamp.atZone(zoneId).toString())
+                                Text(
+                                    text = item.timestamp.atZone(zoneId).format(dateTimeFormatter),
+                                    style = TextStyle(
+                                        color = Color.Gray,
+                                        fontSize = 12.sp
+                                    )
+                                )
                                 Spacer(modifier = Modifier.weight(1f))
                                 Button(
                                     onClick = {
