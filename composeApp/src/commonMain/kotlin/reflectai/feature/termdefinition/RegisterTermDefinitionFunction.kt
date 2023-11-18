@@ -11,7 +11,7 @@ import kotlinx.serialization.json.add
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
 import kotlinx.serialization.json.putJsonObject
-import reflectai.truncateAt
+import reflectai.ui.truncateAt
 
 data class RegisterTermDefinitionArgument(val word: String, val definition: String)
 

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import reflectai.model.ChatLog
 import reflectai.model.ChatLogMessage
 import org.slf4j.LoggerFactory
+import reflectai.ui.showAlert
 import java.nio.file.Files
 import java.time.Instant
 import java.time.LocalDate

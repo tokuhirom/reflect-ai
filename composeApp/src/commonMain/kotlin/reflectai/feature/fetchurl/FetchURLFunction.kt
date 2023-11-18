@@ -15,7 +15,7 @@ import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
 import kotlinx.serialization.json.putJsonObject
 import org.jsoup.Jsoup
-import reflectai.truncateAt
+import reflectai.ui.truncateAt
 
 
 data class FetchUrlArgument(val url: String)

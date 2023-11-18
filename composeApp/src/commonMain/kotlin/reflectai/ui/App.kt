@@ -1,4 +1,4 @@
-package reflectai
+package reflectai.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -54,45 +54,27 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
+import reflectai.ChatLogRepository
+import reflectai.ConfigRepository
+import reflectai.MarkdownBlocKType
+import reflectai.MarkdownBlock
 import reflectai.chatgpt.ChatGPTService
 import reflectai.chatgpt.FunctionChatCompletionStreamItem
 import reflectai.chatgpt.StringChatCompletionStreamItem
 import reflectai.feature.FunctionRepository
 import reflectai.feature.RendableFunction
+import reflectai.makeMarkdownAnnotatedString
 import reflectai.model.ChatLogMessage
 import reflectai.model.ChatLogRole
 import reflectai.model.aiModels
-import java.awt.Desktop
+import reflectai.splitIntoMarkdownBlocks
 import java.awt.Toolkit
 import java.awt.datatransfer.Clipboard
 import java.awt.datatransfer.StringSelection
-import java.net.URI
 import java.text.NumberFormat
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.*
-import javax.swing.JOptionPane
-
-fun String.truncateAt(maxLength: Int): String {
-    if (this.length <= maxLength) return this
-    return this.take(maxLength) + "..."
-}
-
-fun showAlert(message: String) {
-    JOptionPane.showMessageDialog(null, message, "Alert", JOptionPane.WARNING_MESSAGE)
-}
-
-fun copyToClipboard(text: String) {
-    val clipboard: Clipboard = Toolkit.getDefaultToolkit().systemClipboard
-    val stringSelection = StringSelection(text)
-    clipboard.setContents(stringSelection, stringSelection)
-}
-
-fun openUrl(url: String) {
-    if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-        Desktop.getDesktop().browse(URI(url))
-    }
-}
 
 suspend fun LazyListState.scrollToEnd() {
     // スクロールする必要があるアイテムがない場合は何もしない
