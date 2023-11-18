@@ -218,7 +218,7 @@ fun App(
                         onDismissRequest = { expanded = false },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        aiModels.forEachIndexed { index, aiModel ->
+                        aiModels.forEach { aiModel ->
                             DropdownMenuItem(onClick = {
                                 targetAiModel = aiModel
                                 expanded = false

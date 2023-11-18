@@ -20,20 +20,20 @@ class Container {
         .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
         .registerModule(JavaTimeModule())
         .enable(SerializationFeature.INDENT_OUTPUT)
-    val chatLogRepository = ChatLogRepository(objectMapper, zoneId)
+    val configRepository = ConfigRepository()
+    val chatLogRepository = ChatLogRepository(objectMapper, zoneId, configRepository)
     private val ktorClient = io.ktor.client.HttpClient() {
         install(Logging)
     }
-    val configRepository = ConfigRepository()
 
-    private val termDefinitionRepository = TermDefinitionRepository()
+    private val termDefinitionRepository = TermDefinitionRepository(configRepository)
     val functionRepository = FunctionRepository(
         listOf(
             FetchURLFunction(objectMapper, ktorClient),
             FetchTermDefinitionFunction(objectMapper, termDefinitionRepository),
             RegisterTermDefinitionFunction(objectMapper, termDefinitionRepository),
             GoogleSearchFunction(configRepository, objectMapper, ktorClient),
-            ImageGenFunction(objectMapper, configRepository, ImageRepository()),
+            ImageGenFunction(objectMapper, configRepository, ImageRepository(configRepository)),
         )
     )
     val chatGPTService = ChatGPTService(functionRepository)

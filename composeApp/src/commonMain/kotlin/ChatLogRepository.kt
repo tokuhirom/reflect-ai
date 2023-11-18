@@ -1,22 +1,22 @@
+
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import model.ChatLog
 import model.ChatLogMessage
 import org.slf4j.LoggerFactory
 import java.nio.file.Files
-import java.nio.file.Paths
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZonedDateTime
 
-class ChatLogRepository(private val objectMapper: ObjectMapper, private val zoneId: ZoneId) {
+class ChatLogRepository(private val objectMapper: ObjectMapper, private val zoneId: ZoneId, private val configRepository: ConfigRepository) {
     private val logger = LoggerFactory.getLogger(javaClass)
 
     fun saveConversations(logs: List<ChatLogMessage>, targetTime: Instant = Instant.now()) {
         val targetDateTime = targetTime.atZone(zoneId)
         val dateStr = targetDate(targetDateTime).toString()
-        val directoryPath = Paths.get(System.getProperty("user.home"), "ReflectAI")
+        val directoryPath = configRepository.loadSettings().dataDirectoryPath
         val filePath = directoryPath.resolve("$dateStr.json")
 
         // ディレクトリが存在しない場合は作成
@@ -45,8 +45,7 @@ class ChatLogRepository(private val objectMapper: ObjectMapper, private val zone
     fun loadConversations(date: LocalDate = targetDate(ZonedDateTime.now())): ChatLog {
         println("loadConversations: $date")
 
-        val directoryPath = Paths.get(System.getProperty("user.home"), "ReflectAI")
-        val filePath = directoryPath.resolve("${date}.json")
+        val filePath = configRepository.loadSettings().dataDirectoryPath.resolve("${date}.json")
 
         return try {
             // ファイルが存在しない場合はnullを返す

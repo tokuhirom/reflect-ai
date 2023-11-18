@@ -1,5 +1,6 @@
 package feature.termdefinition
 
+import ConfigRepository
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -13,12 +14,12 @@ import kotlin.io.path.writeText
 
 data class WordMapping(val words: Map<String, String>)
 
-class TermDefinitionRepository {
+class TermDefinitionRepository(private val configRepository: ConfigRepository) {
     private val objectMapper = jacksonObjectMapper()
         .enable(SerializationFeature.INDENT_OUTPUT)
 
     private fun filePath(): Path {
-        val path = Paths.get(System.getProperty("user.home"), "ReflectAI/features/termdefinition/words.json")
+        val path = configRepository.loadSettings().dataDirectoryPath.resolve("features/termdefinition/words.json")
         path.parent.toFile().mkdirs()
         return path
     }

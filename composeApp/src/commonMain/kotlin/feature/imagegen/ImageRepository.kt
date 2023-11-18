@@ -1,5 +1,6 @@
 package feature.imagegen
 
+import ConfigRepository
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.time.LocalDateTime
@@ -7,7 +8,7 @@ import java.time.format.DateTimeFormatter
 import kotlin.io.path.relativeTo
 import kotlin.io.path.writeBytes
 
-class ImageRepository {
+class ImageRepository(private val configRepository: ConfigRepository) {
     fun save(byteArray: ByteArray): String {
         val imageDirectory = imageDirectory()
         val path = imageDirectory.resolve(genFileName())
@@ -20,7 +21,7 @@ class ImageRepository {
     }
 
     private fun imageDirectory(): Path {
-        val path = Paths.get(System.getProperty("user.home"), "ReflectAI/features/imagegen")
+        val path = configRepository.loadSettings().dataDirectoryPath.resolve("features/imagegen")
         path.toFile().mkdirs()
         return path
     }
