@@ -1,6 +1,6 @@
-package feature.imagegen
+package reflectai.feature.imagegen
 
-import ConfigRepository
+import reflectai.ConfigRepository
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.PointerMatcher
@@ -19,10 +19,9 @@ import com.aallam.openai.api.image.ImageSize
 import com.aallam.openai.api.image.imageCreation
 import com.aallam.openai.client.OpenAI
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import feature.OpenAIFunction
-import feature.RendableFunction
+import reflectai.feature.OpenAIFunction
+import reflectai.feature.RendableFunction
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -30,7 +29,7 @@ import kotlinx.serialization.json.add
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
 import kotlinx.serialization.json.putJsonObject
-import model.ChatLogMessage
+import reflectai.model.ChatLogMessage
 import org.slf4j.LoggerFactory
 import java.awt.Toolkit
 import java.awt.datatransfer.DataFlavor
@@ -42,7 +41,8 @@ import kotlin.io.path.inputStream
 
 data class ImageGenArgument(val prompt: String, val n: Int?, val size: String?)
 
-class ImageGenFunction(private val objectMapper: ObjectMapper, private val configRepository: ConfigRepository, private val imageRepository: ImageRepository) : OpenAIFunction, RendableFunction {
+class ImageGenFunction(private val objectMapper: ObjectMapper, private val configRepository: ConfigRepository, private val imageRepository: ImageRepository) : OpenAIFunction,
+    RendableFunction {
     private val logger = LoggerFactory.getLogger(javaClass)
 
     override val name = "image_gen"

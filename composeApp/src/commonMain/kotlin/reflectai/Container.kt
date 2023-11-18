@@ -1,16 +1,18 @@
-import chatgpt.ChatGPTService
+package reflectai
+
+import reflectai.chatgpt.ChatGPTService
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import feature.FunctionRepository
-import feature.fetchurl.FetchURLFunction
-import feature.googlesearch.GoogleSearchFunction
-import feature.imagegen.ImageGenFunction
-import feature.imagegen.ImageRepository
-import feature.termdefinition.FetchTermDefinitionFunction
-import feature.termdefinition.RegisterTermDefinitionFunction
-import feature.termdefinition.TermDefinitionRepository
+import reflectai.feature.FunctionRepository
+import reflectai.feature.fetchurl.FetchURLFunction
+import reflectai.feature.googlesearch.GoogleSearchFunction
+import reflectai.feature.imagegen.ImageGenFunction
+import reflectai.feature.imagegen.ImageRepository
+import reflectai.feature.termdefinition.FetchTermDefinitionFunction
+import reflectai.feature.termdefinition.RegisterTermDefinitionFunction
+import reflectai.feature.termdefinition.TermDefinitionRepository
 import io.ktor.client.plugins.logging.*
 import java.time.ZoneId
 

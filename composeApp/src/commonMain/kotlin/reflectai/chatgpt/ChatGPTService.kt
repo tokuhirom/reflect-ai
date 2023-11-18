@@ -1,4 +1,4 @@
-package chatgpt
+package reflectai.chatgpt
 
 import com.aallam.ktoken.Tokenizer
 import com.aallam.openai.api.chat.ChatCompletionChunk
@@ -7,7 +7,7 @@ import com.aallam.openai.api.chat.ChatMessage
 import com.aallam.openai.api.chat.ChatRole
 import com.aallam.openai.api.chat.FunctionMode
 import com.aallam.openai.client.OpenAI
-import feature.FunctionRepository
+import reflectai.feature.FunctionRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
@@ -15,7 +15,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
-import model.AIModel
+import reflectai.model.AIModel
 import org.slf4j.LoggerFactory
 
 private fun ChatCompletionChunk.toChatCompletionStreamItem(): ChatCompletionStreamItem {

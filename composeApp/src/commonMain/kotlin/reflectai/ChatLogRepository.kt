@@ -1,8 +1,8 @@
-
+package reflectai
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import model.ChatLog
-import model.ChatLogMessage
+import reflectai.model.ChatLog
+import reflectai.model.ChatLogMessage
 import org.slf4j.LoggerFactory
 import java.nio.file.Files
 import java.time.Instant

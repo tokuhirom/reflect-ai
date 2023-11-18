@@ -1,8 +1,8 @@
-package feature
+package reflectai.feature
 
 import androidx.compose.material.SnackbarHostState
 import androidx.compose.runtime.Composable
-import model.ChatLogMessage
+import reflectai.model.ChatLogMessage
 
 interface RendableFunction {
     @Composable

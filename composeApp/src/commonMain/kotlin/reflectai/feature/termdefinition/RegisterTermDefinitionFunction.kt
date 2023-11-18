@@ -1,22 +1,22 @@
-package feature.termdefinition
+package reflectai.feature.termdefinition
 
 import com.aallam.openai.api.chat.ChatCompletionFunction
 import com.aallam.openai.api.chat.ChatMessage
 import com.aallam.openai.api.chat.ChatRole
 import com.aallam.openai.api.chat.Parameters
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import feature.OpenAIFunction
+import reflectai.feature.OpenAIFunction
 import kotlinx.serialization.json.add
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
 import kotlinx.serialization.json.putJsonObject
-import truncateAt
+import reflectai.truncateAt
 
 data class RegisterTermDefinitionArgument(val word: String, val definition: String)
 
-class RegisterTermDefinitionFunction(private val objectMapper: ObjectMapper, private val termDefinitionRepository: TermDefinitionRepository): OpenAIFunction {
+class RegisterTermDefinitionFunction(private val objectMapper: ObjectMapper, private val termDefinitionRepository: TermDefinitionRepository):
+    OpenAIFunction {
 
     override val name: String = "register_term_definition"
     override val definition: ChatCompletionFunction = ChatCompletionFunction(

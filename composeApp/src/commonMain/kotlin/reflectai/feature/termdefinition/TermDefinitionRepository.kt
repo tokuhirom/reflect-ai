@@ -1,12 +1,11 @@
-package feature.termdefinition
+package reflectai.feature.termdefinition
 
-import ConfigRepository
+import reflectai.ConfigRepository
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
 import kotlin.io.path.name
 import kotlin.io.path.readText

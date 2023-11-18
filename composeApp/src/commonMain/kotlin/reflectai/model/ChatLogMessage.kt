@@ -1,4 +1,4 @@
-package model
+package reflectai.model
 
 import com.aallam.openai.api.chat.ChatMessage
 import com.aallam.openai.api.chat.ChatRole

@@ -1,4 +1,4 @@
-package feature
+package reflectai.feature
 
 import com.aallam.openai.api.chat.ChatCompletionFunction
 import com.aallam.openai.api.chat.ChatMessage

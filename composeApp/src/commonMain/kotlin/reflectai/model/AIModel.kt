@@ -1,4 +1,4 @@
-package model
+package reflectai.model
 
 import com.aallam.ktoken.Tokenizer
 import com.aallam.ktoken.loader.LocalPbeLoader

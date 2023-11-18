@@ -1,6 +1,8 @@
+package reflectai
+
 import com.fasterxml.jackson.module.kotlin.jacksonMapperBuilder
 import com.fasterxml.jackson.module.kotlin.readValue
-import model.Config
+import reflectai.model.Config
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths

@@ -1,3 +1,5 @@
+package reflectai
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -46,20 +48,20 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import chatgpt.ChatGPTService
-import chatgpt.FunctionChatCompletionStreamItem
-import chatgpt.StringChatCompletionStreamItem
-import feature.FunctionRepository
-import feature.RendableFunction
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
-import model.ChatLogMessage
-import model.ChatLogRole
-import model.aiModels
 import org.slf4j.LoggerFactory
+import reflectai.chatgpt.ChatGPTService
+import reflectai.chatgpt.FunctionChatCompletionStreamItem
+import reflectai.chatgpt.StringChatCompletionStreamItem
+import reflectai.feature.FunctionRepository
+import reflectai.feature.RendableFunction
+import reflectai.model.ChatLogMessage
+import reflectai.model.ChatLogRole
+import reflectai.model.aiModels
 import java.awt.Desktop
 import java.awt.Toolkit
 import java.awt.datatransfer.Clipboard

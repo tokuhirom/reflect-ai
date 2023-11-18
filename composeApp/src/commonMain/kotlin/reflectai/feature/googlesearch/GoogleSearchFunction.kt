@@ -1,18 +1,14 @@
-package feature.googlesearch
+package reflectai.feature.googlesearch
 
-import ConfigRepository
+import reflectai.ConfigRepository
 import com.aallam.openai.api.chat.ChatCompletionFunction
 import com.aallam.openai.api.chat.ChatMessage
 import com.aallam.openai.api.chat.ChatRole
 import com.aallam.openai.api.chat.Parameters
-import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import feature.OpenAIFunction
+import reflectai.feature.OpenAIFunction
 import io.ktor.client.*
-import io.ktor.client.plugins.logging.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import kotlinx.serialization.json.add
@@ -34,7 +30,8 @@ data class GoogleCustomSearchSocialMediaPosting(val articlebody: String, val url
 
 data class GoogleSearchArgument(val query: String)
 
-class GoogleSearchFunction(private val configRepository: ConfigRepository, private val objectMapper: ObjectMapper, private val ktorClient: HttpClient) : OpenAIFunction {
+class GoogleSearchFunction(private val configRepository: ConfigRepository, private val objectMapper: ObjectMapper, private val ktorClient: HttpClient) :
+    OpenAIFunction {
     private val logger = LoggerFactory.getLogger(javaClass)
 
     override val name = "google_search"
