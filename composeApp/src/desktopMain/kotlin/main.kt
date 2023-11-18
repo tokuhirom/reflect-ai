@@ -1,3 +1,4 @@
+
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -7,31 +8,15 @@ import androidx.compose.ui.input.key.KeyShortcut
 import androidx.compose.ui.window.MenuBar
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
-import chatgpt.ChatGPTService
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import feature.FunctionRepository
-import java.time.ZoneId
 
 fun main() = application {
-    val zoneId = ZoneId.systemDefault()
-    println("ZoneId: $zoneId")
-    val objectMapper = jacksonObjectMapper()
-        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-        .registerModule(JavaTimeModule())
-        .enable(SerializationFeature.INDENT_OUTPUT)
-    val chatLogRepository = ChatLogRepository(objectMapper, zoneId)
-    val chatGPTService = ChatGPTService()
-    val configRepository = ConfigRepository()
-    val config = configRepository.loadSettings()
-    val functionRepository = FunctionRepository()
+    val container = Container()
+    val config = container.configRepository.loadSettings()
 
     var showSettingsDialog by remember { mutableStateOf(false) }
 
     Window(onCloseRequest = ::exitApplication, title = "ReflectAI") {
-        App(chatGPTService, chatLogRepository, zoneId, configRepository, functionRepository)
+        App(container.chatGPTService, container.chatLogRepository, container.zoneId, container.configRepository, container.functionRepository)
 
         if (showSettingsDialog) {
             ConfigurationDialog(
@@ -41,7 +26,7 @@ fun main() = application {
                     config.apiToken = apiToken
                     config.googleSearchConfig.apiKey = googleApiKey
                     config.googleSearchConfig.searchEngineId = googleSearchEngineId
-                    configRepository.saveSettings(config)
+                    container.configRepository.saveSettings(config)
                 },
                 onDialogClose = {
                     showSettingsDialog = false

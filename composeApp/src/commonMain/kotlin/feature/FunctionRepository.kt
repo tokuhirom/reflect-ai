@@ -20,10 +20,6 @@ class FunctionRepository {
         return functions.map { it.definition }.toList()
     }
 
-    fun firstOrNull(predicate: (OpenAIFunction) -> Boolean): OpenAIFunction? {
-        return functions.firstOrNull { predicate(it) }
-    }
-
     fun getByName(name: String): OpenAIFunction? {
         return functions.firstOrNull { it.name == name }
     }
