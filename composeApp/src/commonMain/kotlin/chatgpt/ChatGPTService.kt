@@ -32,9 +32,8 @@ data class FunctionChatCompletionStreamItem(
     val chatMessage: ChatMessage
 ) : ChatCompletionStreamItem()
 
-class ChatGPTService {
+class ChatGPTService(private val functionRepository: FunctionRepository) {
     private val logger = LoggerFactory.getLogger(javaClass)
-    private val functionRepository = FunctionRepository()
 
     suspend fun sendMessage(
         apiKey: String,

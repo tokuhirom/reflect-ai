@@ -4,7 +4,7 @@ import com.aallam.openai.api.chat.ChatCompletionFunction
 import com.aallam.openai.api.chat.ChatMessage
 import com.aallam.openai.api.chat.ChatRole
 import com.aallam.openai.api.chat.Parameters
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import feature.OpenAIFunction
 import kotlinx.serialization.json.add
@@ -15,10 +15,8 @@ import truncateAt
 
 data class FetchTermDefinitionArgument(val word: String)
 
-class FetchTermDefinitionFunction : OpenAIFunction {
+class FetchTermDefinitionFunction(private val objectMapper: ObjectMapper, private val teamDefinitionRepository: TermDefinitionRepository) : OpenAIFunction {
     override val name = "fetch_term_definition"
-    private val objectMapper = jacksonObjectMapper()
-    private val teamDefinitionRepository = TermDefinitionRepository()
     override val definition = ChatCompletionFunction(
         name,
         """This function fetches the definition of a given term and, if available, provides a URL for further

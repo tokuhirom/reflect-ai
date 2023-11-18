@@ -6,10 +6,12 @@ import com.aallam.openai.api.chat.ChatMessage
 import com.aallam.openai.api.chat.ChatRole
 import com.aallam.openai.api.chat.Parameters
 import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import feature.OpenAIFunction
+import io.ktor.client.*
 import io.ktor.client.plugins.logging.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -32,17 +34,8 @@ data class GoogleCustomSearchSocialMediaPosting(val articlebody: String, val url
 
 data class GoogleSearchArgument(val query: String)
 
-class GoogleSearchFunction : OpenAIFunction {
+class GoogleSearchFunction(private val configRepository: ConfigRepository, private val objectMapper: ObjectMapper, private val ktorClient: HttpClient) : OpenAIFunction {
     private val logger = LoggerFactory.getLogger(javaClass)
-    private val configRepository = ConfigRepository()
-
-    private val objectMapper = jacksonObjectMapper()
-        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-        .registerModule(JavaTimeModule())
-
-    private val ktorClient = io.ktor.client.HttpClient() {
-        install(Logging)
-    }
 
     override val name = "google_search"
     override val definition = ChatCompletionFunction(

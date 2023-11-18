@@ -4,6 +4,7 @@ import com.aallam.openai.api.chat.ChatCompletionFunction
 import com.aallam.openai.api.chat.ChatMessage
 import com.aallam.openai.api.chat.ChatRole
 import com.aallam.openai.api.chat.Parameters
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import feature.OpenAIFunction
@@ -15,9 +16,7 @@ import truncateAt
 
 data class RegisterTermDefinitionArgument(val word: String, val definition: String)
 
-class RegisterTermDefinitionFunction : OpenAIFunction {
-    private val objectMapper = jacksonObjectMapper()
-    private val termDefinitionRepository = TermDefinitionRepository()
+class RegisterTermDefinitionFunction(private val objectMapper: ObjectMapper, private val termDefinitionRepository: TermDefinitionRepository): OpenAIFunction {
 
     override val name: String = "register_term_definition"
     override val definition: ChatCompletionFunction = ChatCompletionFunction(

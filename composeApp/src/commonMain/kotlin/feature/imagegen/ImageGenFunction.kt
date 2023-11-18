@@ -18,6 +18,7 @@ import com.aallam.openai.api.chat.Parameters
 import com.aallam.openai.api.image.ImageSize
 import com.aallam.openai.api.image.imageCreation
 import com.aallam.openai.client.OpenAI
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import feature.OpenAIFunction
@@ -41,13 +42,10 @@ import kotlin.io.path.inputStream
 
 data class ImageGenArgument(val prompt: String, val n: Int?, val size: String?)
 
-class ImageGenFunction : OpenAIFunction, RendableFunction {
+class ImageGenFunction(private val objectMapper: ObjectMapper, private val configRepository: ConfigRepository, private val imageRepository: ImageRepository) : OpenAIFunction, RendableFunction {
     private val logger = LoggerFactory.getLogger(javaClass)
 
     override val name = "image_gen"
-    private val objectMapper = jacksonObjectMapper()
-    private val configRepository = ConfigRepository()
-    private val imageRepository = ImageRepository()
 
     override fun dontSendToOpenAIAgain(): Boolean = true
 

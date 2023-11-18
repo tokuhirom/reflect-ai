@@ -4,28 +4,23 @@ import com.aallam.openai.api.chat.ChatCompletionFunction
 import com.aallam.openai.api.chat.ChatMessage
 import com.aallam.openai.api.chat.ChatRole
 import com.aallam.openai.api.chat.Parameters
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import feature.OpenAIFunction
+import io.ktor.client.*
 import io.ktor.client.call.*
-import io.ktor.client.plugins.logging.*
 import io.ktor.client.request.*
 import kotlinx.serialization.json.add
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
 import kotlinx.serialization.json.putJsonObject
 import org.jsoup.Jsoup
-import org.slf4j.LoggerFactory
 import truncateAt
 
 
 data class FetchUrlArgument(val url: String)
 
-class FetchURLFunction  : OpenAIFunction {
-    private val objectMapper = jacksonObjectMapper()
-    private val ktorClient = io.ktor.client.HttpClient() {
-        install(Logging)
-    }
+class FetchURLFunction(private val objectMapper: ObjectMapper, private val ktorClient: HttpClient)  : OpenAIFunction {
     override val name = "fetch_url"
 
     override val definition = ChatCompletionFunction(
