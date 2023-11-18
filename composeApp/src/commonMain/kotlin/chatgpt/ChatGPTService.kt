@@ -77,8 +77,10 @@ class ChatGPTService {
             logger.info("ARGUMENT: ${funcall.name} $argument")
             progressUpdate("Running function: ${funcall.name}: $argument")
 
+            val function = functionRepository.getByName(funcall.name)
+
             val funcallMsg = try {
-                functionRepository.firstOrNull { it.name == funcall.name }?.callFunction(
+                function?.callFunction(
                     argument,
                     remainTokens - tokenizer.encode(messages.last().content!!).size
                 ) ?: ChatMessage(
@@ -93,6 +95,10 @@ class ChatGPTService {
                     name = funcall.name,
                     content = "Cannot call function: ${funcall.name}(${e.javaClass.canonicalName} ${e.message})}",
                 )
+            }
+
+            if (function != null && function.dontSendToOpenAIAgain()) {
+                return flowOf(FunctionChatCompletionStreamItem(funcallMsg))
             }
 
             progressUpdate("Calling OpenAI API again...")

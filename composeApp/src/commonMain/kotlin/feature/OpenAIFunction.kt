@@ -10,4 +10,6 @@ interface OpenAIFunction {
         argumentJson: String,
         remainTokens: Int,
     ): ChatMessage
+
+    fun dontSendToOpenAIAgain(): Boolean = false
 }

@@ -49,6 +49,8 @@ class ImageGenFunction : OpenAIFunction, RendableFunction {
     private val configRepository = ConfigRepository()
     private val imageRepository = ImageRepository()
 
+    override fun dontSendToOpenAIAgain(): Boolean = true
+
     override val definition = ChatCompletionFunction(
         name,
         """Generate image using OpenAI's API.""".trimMargin(),
