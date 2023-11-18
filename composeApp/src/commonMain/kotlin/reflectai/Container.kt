@@ -1,10 +1,12 @@
 package reflectai
 
-import reflectai.chatgpt.ChatGPTService
+import com.aallam.openai.client.OpenAI
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import io.ktor.client.plugins.logging.*
+import reflectai.chatgpt.ChatGPTService
 import reflectai.feature.FunctionRepository
 import reflectai.feature.fetchurl.FetchURLFunction
 import reflectai.feature.googlesearch.GoogleSearchFunction
@@ -13,7 +15,7 @@ import reflectai.feature.imagegen.ImageRepository
 import reflectai.feature.termdefinition.FetchTermDefinitionFunction
 import reflectai.feature.termdefinition.RegisterTermDefinitionFunction
 import reflectai.feature.termdefinition.TermDefinitionRepository
-import io.ktor.client.plugins.logging.*
+import reflectai.ui.ChatViewModel
 import java.time.ZoneId
 
 class Container {
@@ -38,5 +40,11 @@ class Container {
             ImageGenFunction(objectMapper, configRepository, ImageRepository(configRepository)),
         )
     )
-    val chatGPTService = ChatGPTService(functionRepository)
+    val openaiProvider: () -> OpenAI = {
+        val apiToken = configRepository.loadSettings().apiToken
+        OpenAI(apiToken)
+    }
+    val chatGPTService = ChatGPTService(functionRepository, configRepository, openaiProvider)
+
+    val chatViewModel = ChatViewModel(chatGPTService, chatLogRepository, configRepository)
 }

@@ -45,22 +45,12 @@ import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.onCompletion
-import kotlinx.coroutines.launch
-import org.slf4j.LoggerFactory
-import reflectai.ChatLogRepository
 import reflectai.ConfigRepository
 import reflectai.MarkdownBlocKType
 import reflectai.MarkdownBlock
-import reflectai.chatgpt.ChatGPTService
-import reflectai.chatgpt.FunctionChatCompletionStreamItem
-import reflectai.chatgpt.StringChatCompletionStreamItem
 import reflectai.feature.FunctionRepository
 import reflectai.feature.RendableFunction
 import reflectai.makeMarkdownAnnotatedString
@@ -100,90 +90,20 @@ suspend fun LazyListState.scrollToEnd() {
 
 @Composable
 fun App(
-    chatGPTService: ChatGPTService,
-    chatLogRepository: ChatLogRepository,
     zoneId: ZoneId,
     configRepository: ConfigRepository,
     funcitonRepository: FunctionRepository,
+    chatViewModel: ChatViewModel,
 ) {
-    val logger = LoggerFactory.getLogger("App")
-    val initialConversation = chatLogRepository.loadConversations().logs
     val config = configRepository.loadSettings()
-    var targetAiModel = aiModels.firstOrNull { it.name == config.defaultModelName }
-        ?: aiModels.first()
     val numberFormat = NumberFormat.getNumberInstance(Locale.getDefault())
     val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
 
     MaterialTheme {
-        var message by remember { mutableStateOf(TextFieldValue("")) }
-        var conversation by remember { mutableStateOf(initialConversation) }
-        var progressIndicator by remember { mutableStateOf(TextFieldValue("")) }
         val lazyListState = rememberLazyListState()
 
-        fun sendMessage() {
-            if (message.text.isNotEmpty()) {
-                conversation += ChatLogMessage(ChatLogRole.User, message.text)
-                message = TextFieldValue("")
-
-                CoroutineScope(Dispatchers.Main).launch {
-                    var current = ChatLogMessage(ChatLogRole.AI, "", inProgress = true)
-                    conversation += current
-
-                    fun updateMessage(msg: String, role: ChatLogRole, inProgress: Boolean = false) {
-                        current = ChatLogMessage(
-                            role,
-                            current.message + msg,
-                            current.id,
-                            inProgress = inProgress,
-                            timestamp = current.timestamp
-                        )
-                        conversation = conversation.filter { it.id != current.id } + current
-                    }
-
-                    try {
-                        chatGPTService.sendMessage(
-                            config.apiToken,
-                            targetAiModel,
-                            config.prompt,
-                            conversation.toList()
-                                .filter { it.role != ChatLogRole.Error }
-                                .map { it.toChatMessage() },
-                        ) {
-                            progressIndicator = TextFieldValue(it)
-                        }.onCompletion {
-                            println("chatCompletions complete.")
-                            updateMessage("", ChatLogRole.AI, false)
-                            chatLogRepository.saveConversations(conversation)
-                        }.collect {item ->
-                            when (item) {
-                                is StringChatCompletionStreamItem -> {
-                                    updateMessage(item.content, ChatLogRole.AI, true)
-                                }
-
-                                is FunctionChatCompletionStreamItem -> {
-                                    conversation = conversation.filter { it.id != current.id } + ChatLogMessage(
-                                        ChatLogRole.Function,
-                                        item.chatMessage.content!!,
-                                        name = item.chatMessage.name)  + current
-                                }
-                            }
-                            chatLogRepository.saveConversations(conversation)
-                        }
-                    } catch (e: Exception) {
-                        logger.error("Got an error : $e", e)
-                        updateMessage(if (e.message != null) {
-                            "${e.javaClass.canonicalName} ${e.message}"
-                        } else {
-                            "Got an error : $e"
-                                                                                }, ChatLogRole.Error)
-                        chatLogRepository.saveConversations(conversation)
-                    }
-                }
-            }
-        }
-
         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-            LaunchedEffect(conversation) {
+            LaunchedEffect(chatViewModel.conversation) {
                 delay(100) // conversation のレンダリングが終わってからスクロール位置を調整すべき
                 lazyListState.scrollToEnd()
             }
@@ -192,7 +112,7 @@ fun App(
                 var expanded by remember { mutableStateOf(false) }
                 Box(modifier = Modifier.fillMaxWidth().wrapContentSize(Alignment.TopStart)) {
                     Text(
-                        targetAiModel.name + " (${targetAiModel.maxTokens} max tokens)",
+                        chatViewModel.targetAiModel.name + " (${chatViewModel.targetAiModel.maxTokens} max tokens)",
                         modifier = Modifier.fillMaxWidth().clickable(onClick = { expanded = true }).background(
                             Color.Gray
                         )
@@ -204,7 +124,7 @@ fun App(
                     ) {
                         aiModels.forEach { aiModel ->
                             DropdownMenuItem(onClick = {
-                                targetAiModel = aiModel
+                                chatViewModel.targetAiModel = aiModel
                                 expanded = false
                                 config.defaultModelName = aiModel.name
                                 configRepository.saveSettings(config)
@@ -223,7 +143,7 @@ fun App(
             )
 
             LazyColumn(modifier = Modifier.weight(1f), state = lazyListState) {
-                items(conversation) { item ->
+                items(chatViewModel.conversation) { item ->
                     if (item.role == ChatLogRole.Function) {
                         val function = funcitonRepository.getByName(item.name!!) ?: return@items
                         if (function is RendableFunction) {
@@ -274,8 +194,8 @@ fun App(
                                 }
                             }
 
-                            if (progressIndicator.text.isNotEmpty() && item.inProgress) {
-                                Text(progressIndicator.text, color = Color.Gray)
+                            if (chatViewModel.progressIndicator.text.isNotEmpty() && item.inProgress) {
+                                Text(chatViewModel.progressIndicator.text, color = Color.Gray)
                             }
 
                             renderTextBlock(item)
@@ -288,8 +208,8 @@ fun App(
 
             Row {
                 TextField(
-                    value = message,
-                    onValueChange = { message = it },
+                    value = chatViewModel.message,
+                    onValueChange = { chatViewModel.message = it },
                     modifier = Modifier
                         .weight(1f)
                         .border(1.dp, Color.Gray)
@@ -297,7 +217,7 @@ fun App(
                             when {
                                 // Enterのみが押された場合、メッセージを送信
                                 keyEvent.key == Key.Enter && keyEvent.isMetaPressed -> {
-                                    sendMessage()
+                                    chatViewModel.sendMessage()
                                     true
                                 }
 
@@ -307,7 +227,7 @@ fun App(
                 )
 
                 Button(onClick = {
-                    sendMessage()
+                    chatViewModel.sendMessage()
                 }) {
                     Text("POST")
                 }

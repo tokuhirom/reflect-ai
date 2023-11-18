@@ -7,7 +7,6 @@ import com.aallam.openai.api.chat.ChatMessage
 import com.aallam.openai.api.chat.ChatRole
 import com.aallam.openai.api.chat.FunctionMode
 import com.aallam.openai.client.OpenAI
-import reflectai.feature.FunctionRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
@@ -15,8 +14,10 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
-import reflectai.model.AIModel
 import org.slf4j.LoggerFactory
+import reflectai.ConfigRepository
+import reflectai.feature.FunctionRepository
+import reflectai.model.AIModel
 
 private fun ChatCompletionChunk.toChatCompletionStreamItem(): ChatCompletionStreamItem {
     return StringChatCompletionStreamItem(this.choices.firstOrNull()?.delta?.content ?: "")
@@ -32,17 +33,21 @@ data class FunctionChatCompletionStreamItem(
     val chatMessage: ChatMessage
 ) : ChatCompletionStreamItem()
 
-class ChatGPTService(private val functionRepository: FunctionRepository) {
+class ChatGPTService(
+    private val functionRepository: FunctionRepository,
+    private val configRepository: ConfigRepository,
+    private val openaiProvider: () -> OpenAI
+) {
     private val logger = LoggerFactory.getLogger(javaClass)
 
     suspend fun sendMessage(
-        apiKey: String,
         aiModel: AIModel,
-        prompt: String,
         messages: List<ChatMessage>,
         progressUpdate: (String) -> Unit,
     ): Flow<ChatCompletionStreamItem> {
-        val openai = OpenAI(token = apiKey)
+        val openai = openaiProvider()
+        val config = configRepository.loadSettings()
+        val prompt = config.prompt
 
         // gpt-3.5-turbo is max 4,097 tokens.
         // we must take 500 tokens for response.

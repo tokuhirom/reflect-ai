@@ -17,7 +17,12 @@ fun main() = application {
     var showSettingsDialog by remember { mutableStateOf(false) }
 
     Window(onCloseRequest = ::exitApplication, title = "ReflectAI") {
-        App(container.chatGPTService, container.chatLogRepository, container.zoneId, container.configRepository, container.functionRepository)
+        App(
+            container.zoneId,
+            container.configRepository,
+            container.functionRepository,
+            container.chatViewModel
+        )
 
         if (showSettingsDialog) {
             ConfigurationDialog(
