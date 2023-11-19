@@ -1,20 +1,14 @@
-This is a Kotlin Multiplatform project targeting Desktop.
+# ReflectAI
 
-* `/composeApp` is for code that will be shared across your Compose Multiplatform applications.
-  It contains several subfolders:
-    - `commonMain` is for code that’s common for all targets.
-    - Other folders are for Kotlin code that will be compiled for only the platform indicated in the folder
-      name.
-      For example, if you want to use Apple’s CryptoKit for the iOS part of your Kotlin app,
-      `iosMain` would be the right folder for such calls.
+## What is this?
 
-Learn more
-about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html)…
+This is a free and open source personal assistant software based on AI technology.
 
-- 基本的に mac で動くことだけを想定してます。
+## Supported platforms
 
-- chatgpt をつかった、パーソナルアシスタント的なものを実装したい。
-  - チャット UI にこだわりはないが、一旦 chat ui っぽいやつを実装してしまった。
+ * Mac OS X Ventura or later
+
+Maybe it can run on Windows or Linux, but I haven't tested it.
 
 ## Dependencies
 
@@ -26,3 +20,8 @@ about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform
 
 で実行できます。
 
+## Build guide
+
+    ./gradlew packageDmg
+
+This command generate a dmg file in `composeApp/build/compose/binaries/main/dmg/` directory.
