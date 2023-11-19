@@ -15,10 +15,10 @@ import reflectai.model.AIModel
 import reflectai.model.ChatLogMessage
 import reflectai.model.ChatLogRole
 import reflectai.model.aiModels
-import reflectai.openai.ErrorChatCompletionStreamItem
-import reflectai.openai.FunctionChatCompletionStreamItem
-import reflectai.openai.OpenAIService
-import reflectai.openai.StringChatCompletionStreamItem
+import reflectai.ai.openai.ErrorChatCompletionStreamItem
+import reflectai.ai.openai.FunctionChatCompletionStreamItem
+import reflectai.ai.openai.OpenAIService
+import reflectai.ai.openai.StringChatCompletionStreamItem
 
 class ChatViewModel(
     private val openAIService: OpenAIService,

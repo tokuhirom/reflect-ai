@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.ktor.client.plugins.logging.*
-import reflectai.openai.OpenAIService
+import reflectai.ai.openai.OpenAIService
 import reflectai.feature.FunctionRepository
 import reflectai.feature.fetchurl.FetchURLFunction
 import reflectai.feature.googlesearch.GoogleSearchFunction
@@ -15,7 +15,7 @@ import reflectai.feature.imagegen.ImageRepository
 import reflectai.feature.termdefinition.FetchTermDefinitionFunction
 import reflectai.feature.termdefinition.RegisterTermDefinitionFunction
 import reflectai.feature.termdefinition.TermDefinitionRepository
-import reflectai.openai.OpenAIProvider
+import reflectai.ai.openai.OpenAIProvider
 import reflectai.ui.ChatViewModel
 import java.time.ZoneId
 

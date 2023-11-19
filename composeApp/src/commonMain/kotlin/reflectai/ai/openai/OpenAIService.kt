@@ -1,4 +1,4 @@
-package reflectai.openai
+package reflectai.ai.openai
 
 import com.aallam.ktoken.Tokenizer
 import com.aallam.openai.api.chat.ChatCompletionChunk
