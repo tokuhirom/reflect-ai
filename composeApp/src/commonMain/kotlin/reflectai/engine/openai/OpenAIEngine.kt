@@ -1,4 +1,4 @@
-package reflectai.ai.openai
+package reflectai.engine.openai
 
 import com.aallam.ktoken.Tokenizer
 import com.aallam.openai.api.chat.ChatCompletionChunk
@@ -15,36 +15,25 @@ import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 import org.slf4j.LoggerFactory
 import reflectai.ConfigRepository
+import reflectai.engine.ChatCompletionStreamItem
+import reflectai.engine.ErrorChatCompletionStreamItem
+import reflectai.engine.FunctionChatCompletionStreamItem
+import reflectai.engine.StringChatCompletionStreamItem
 import reflectai.feature.FunctionRepository
-import reflectai.model.AIModel
 
 private fun ChatCompletionChunk.toChatCompletionStreamItem(): ChatCompletionStreamItem {
     return StringChatCompletionStreamItem(this.choices.firstOrNull()?.delta?.content ?: "")
 }
 
-sealed class ChatCompletionStreamItem
-
-data class StringChatCompletionStreamItem(
-    val content: String
-) : ChatCompletionStreamItem()
-
-data class FunctionChatCompletionStreamItem(
-    val chatMessage: ChatMessage
-) : ChatCompletionStreamItem()
-
-data class ErrorChatCompletionStreamItem(
-    val message: String
-) : ChatCompletionStreamItem()
-
-class OpenAIService(
+class OpenAIEngine(
     private val functionRepository: FunctionRepository,
     private val configRepository: ConfigRepository,
     private val openaiProvider: OpenAIProvider
 ) {
     private val logger = LoggerFactory.getLogger(javaClass)
 
-    suspend fun sendMessage(
-        aiModel: AIModel,
+    suspend fun generate(
+        openAiModel: OpenAIModel,
         messages: List<ChatMessage>,
         progressUpdate: (String) -> Unit,
     ): Flow<ChatCompletionStreamItem> {
@@ -61,16 +50,16 @@ class OpenAIService(
         // gpt-3.5-turbo is max 4,097 tokens.
         // we must take 500 tokens for response.
         // https://platform.openai.com/docs/models/gpt-3-5
-        val tokenizer = aiModel.tokenizer
-        val remainTokens = aiModel.maxTokens - tokenizer.encode(prompt).size - (aiModel.maxTokens / 8)
+        val tokenizer = openAiModel.tokenizer
+        val remainTokens = openAiModel.maxTokens - tokenizer.encode(prompt).size - (openAiModel.maxTokens / 8)
         val usingMessages = getMessagesByTokenCount(messages, tokenizer, remainTokens)
 
-        println("Using model: ${aiModel.name}")
-        progressUpdate("Calling OpenAPI: ${aiModel.name}(using ${usingMessages.size} messages)")
+        println("Using model: ${openAiModel.name}")
+        progressUpdate("Calling OpenAPI: ${openAiModel.name}(using ${usingMessages.size} messages)")
 
         val f = openai.chatCompletions(
             ChatCompletionRequest(
-                model = aiModel.modelId,
+                model = openAiModel.modelId,
                 messages = listOf(
                     ChatMessage(
                         role = ChatRole.System,
@@ -125,7 +114,7 @@ class OpenAIService(
                 )
             val chatCompletionChunkFlow = openai.chatCompletions(
                 ChatCompletionRequest(
-                    model = aiModel.modelId,
+                    model = openAiModel.modelId,
                     messages = listOf(
                         ChatMessage(
                             role = ChatRole.System,

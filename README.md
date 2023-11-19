@@ -32,3 +32,15 @@ Maybe it can run on Windows or Linux, but I haven't tested it.
     ./gradlew packageDmg
 
 This command generate a dmg file in `composeApp/build/compose/binaries/main/dmg/` directory.
+
+## Download Llama model
+
+See also
+
+ * https://blog.curegit.jp/posts/ai/nlp/run-japanese-llama-cpp/
+ * https://huggingface.co/mmnga/ELYZA-japanese-Llama-2-7b-instruct-gguf
+
+   mkdir -p ~/ReflectAI/models/llama/
+   curl -L https://huggingface.co/mmnga/ELYZA-japanese-Llama-2-7b-instruct-gguf/resolve/main/ELYZA-japanese-Llama-2-7b-instruct-q2_K.gguf -o ~/ReflectAI/models/llama/ELYZA-japanese-Llama-2-7b-instruct-q2_K.gguf
+   
+

@@ -1,4 +1,4 @@
-package reflectai.ai.openai
+package reflectai.engine.openai
 
 import com.aallam.openai.client.OpenAI
 import reflectai.ConfigRepository

@@ -11,19 +11,24 @@ import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 import reflectai.ChatLogRepository
 import reflectai.ConfigRepository
-import reflectai.model.AIModel
+import reflectai.engine.AIModel
+import reflectai.engine.ErrorChatCompletionStreamItem
+import reflectai.engine.FunctionChatCompletionStreamItem
+import reflectai.engine.ModelRepository
+import reflectai.engine.StringChatCompletionStreamItem
+import reflectai.engine.llama.LlamaEngine
+import reflectai.engine.llama.LlamaModel
+import reflectai.engine.openai.OpenAIEngine
+import reflectai.engine.openai.OpenAIModel
 import reflectai.model.ChatLogMessage
 import reflectai.model.ChatLogRole
-import reflectai.model.aiModels
-import reflectai.ai.openai.ErrorChatCompletionStreamItem
-import reflectai.ai.openai.FunctionChatCompletionStreamItem
-import reflectai.ai.openai.OpenAIService
-import reflectai.ai.openai.StringChatCompletionStreamItem
 
 class ChatViewModel(
-    private val openAIService: OpenAIService,
+    private val openAIEngine: OpenAIEngine,
     private val chatLogRepository: ChatLogRepository,
     private val configRepository: ConfigRepository,
+    private val modelRepositories: List<ModelRepository>,
+    private val llamaEngine: LlamaEngine,
 ) {
     private val logger = LoggerFactory.getLogger(javaClass)
     private val initialConversation = chatLogRepository.loadConversations().logs
@@ -35,8 +40,9 @@ class ChatViewModel(
 
     private fun getDefaultAIModel(): AIModel {
         val config = configRepository.loadSettings()
-        return aiModels.firstOrNull { it.name == config.defaultModelName }
-            ?: aiModels.first()
+        val models = modelRepositories.flatMap { it.getModels() }
+        return models.firstOrNull { it.name == config.defaultModelName }
+            ?: models.first()
     }
 
     fun sendMessage() {
@@ -60,35 +66,66 @@ class ChatViewModel(
                 }
 
                 try {
-                    openAIService.sendMessage(
-                        targetAiModel,
-                        conversation.toList()
-                            .filter { it.role != ChatLogRole.Error }
-                            .map { it.toChatMessage() },
-                    ) {
-                        progressIndicator = TextFieldValue(it)
-                    }.onCompletion {
-                        println("chatCompletions complete.")
-                        updateMessage("", ChatLogRole.AI, false)
-                        chatLogRepository.saveConversations(conversation)
-                    }.collect {item ->
-                        when (item) {
-                            is StringChatCompletionStreamItem -> {
-                                updateMessage(item.content, ChatLogRole.AI, true)
-                            }
+                    when (targetAiModel) {
+                        is OpenAIModel -> {
+                            openAIEngine.generate(
+                                targetAiModel as OpenAIModel,
+                                conversation.toList()
+                                    .filter { it.role != ChatLogRole.Error }
+                                    .map { it.toChatMessage() },
+                            ) {
+                                progressIndicator = TextFieldValue(it)
+                            }.onCompletion {
+                                println("chatCompletions complete.")
+                                updateMessage("", ChatLogRole.AI, false)
+                                chatLogRepository.saveConversations(conversation)
+                            }.collect {item ->
+                                when (item) {
+                                    is StringChatCompletionStreamItem -> {
+                                        updateMessage(item.content, ChatLogRole.AI, true)
+                                    }
 
-                            is FunctionChatCompletionStreamItem -> {
-                                conversation = conversation.filter { it.id != current.id } + ChatLogMessage(
-                                    ChatLogRole.Function,
-                                    item.chatMessage.content!!,
-                                    name = item.chatMessage.name)  + current
-                            }
+                                    is FunctionChatCompletionStreamItem -> {
+                                        conversation = conversation.filter { it.id != current.id } + ChatLogMessage(
+                                            ChatLogRole.Function,
+                                            item.chatMessage.content!!,
+                                            name = item.chatMessage.name)  + current
+                                    }
 
-                            is ErrorChatCompletionStreamItem -> {
-                                updateMessage(item.message, ChatLogRole.Error, true)
+                                    is ErrorChatCompletionStreamItem -> {
+                                        updateMessage(item.message, ChatLogRole.Error, true)
+                                    }
+                                }
+                                chatLogRepository.saveConversations(conversation)
                             }
                         }
-                        chatLogRepository.saveConversations(conversation)
+                        is LlamaModel -> {
+                            llamaEngine.generate(targetAiModel.name, conversation.toList()
+                                .filter { it.role != ChatLogRole.Error }
+                                .map { it.toChatMessage() }
+                                .takeLast(1),
+                            ) {
+                                logger.info("Got a progress message: $it")
+                            }.collect {item ->
+                                when (item) {
+                                    is StringChatCompletionStreamItem -> {
+                                        updateMessage(item.content, ChatLogRole.AI, true)
+                                    }
+
+                                    is FunctionChatCompletionStreamItem -> {
+                                        conversation = conversation.filter { it.id != current.id } + ChatLogMessage(
+                                            ChatLogRole.Function,
+                                            item.chatMessage.content!!,
+                                            name = item.chatMessage.name)  + current
+                                    }
+
+                                    is ErrorChatCompletionStreamItem -> {
+                                        updateMessage(item.message, ChatLogRole.Error, true)
+                                    }
+                                }
+                                chatLogRepository.saveConversations(conversation)
+                            }
+                        }
                     }
                 } catch (e: Exception) {
                     logger.error("Got an error : $e", e)

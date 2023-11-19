@@ -5,7 +5,7 @@ import java.nio.file.Path
 import java.nio.file.Paths
 
 data class Config(
-    var defaultModelName: String = aiModels[0].name,
+    var defaultModelName: String? = null,
     var prompt: String = """You are a assistant to help the Java/Kotlin developers.
         I prefer kotlin scripting when writing gradle script.
         You are rugged and taciturn.

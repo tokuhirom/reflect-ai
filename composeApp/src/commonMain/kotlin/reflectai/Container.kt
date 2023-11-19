@@ -1,12 +1,15 @@
 package reflectai
 
-import com.aallam.openai.client.OpenAI
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.ktor.client.plugins.logging.*
-import reflectai.ai.openai.OpenAIService
+import reflectai.engine.llama.LlamaEngine
+import reflectai.engine.llama.LlamaModelRepository
+import reflectai.engine.openai.OpenAIEngine
+import reflectai.engine.openai.OpenAIModelRepository
+import reflectai.engine.openai.OpenAIProvider
 import reflectai.feature.FunctionRepository
 import reflectai.feature.fetchurl.FetchURLFunction
 import reflectai.feature.googlesearch.GoogleSearchFunction
@@ -15,7 +18,6 @@ import reflectai.feature.imagegen.ImageRepository
 import reflectai.feature.termdefinition.FetchTermDefinitionFunction
 import reflectai.feature.termdefinition.RegisterTermDefinitionFunction
 import reflectai.feature.termdefinition.TermDefinitionRepository
-import reflectai.ai.openai.OpenAIProvider
 import reflectai.ui.ChatViewModel
 import java.time.ZoneId
 
@@ -26,7 +28,7 @@ class Container {
         .registerModule(JavaTimeModule())
         .enable(SerializationFeature.INDENT_OUTPUT)
     val configRepository = ConfigRepository()
-    val chatLogRepository = ChatLogRepository(objectMapper, zoneId, configRepository)
+    private val chatLogRepository = ChatLogRepository(objectMapper, zoneId, configRepository)
     private val ktorClient = io.ktor.client.HttpClient() {
         install(Logging)
     }
@@ -42,7 +44,18 @@ class Container {
         )
     )
     private val openaiProvider = OpenAIProvider(configRepository)
-    val openAIService = OpenAIService(functionRepository, configRepository, openaiProvider)
+    val openAIEngine = OpenAIEngine(functionRepository, configRepository, openaiProvider)
 
-    val chatViewModel = ChatViewModel(openAIService, chatLogRepository, configRepository)
+    val llamaModelRepository = LlamaModelRepository(configRepository)
+    val openAIModelRepository = OpenAIModelRepository(configRepository)
+    val llamaEngine = LlamaEngine(configRepository, llamaModelRepository)
+
+    val modelRepositories = listOf(
+        openAIModelRepository,
+        llamaModelRepository,
+    )
+
+    val chatViewModel = ChatViewModel(
+        openAIEngine, chatLogRepository, configRepository, modelRepositories,
+        llamaEngine)
 }

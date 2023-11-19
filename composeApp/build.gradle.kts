@@ -38,6 +38,8 @@ kotlin {
                 implementation("com.aallam.openai:openai-client:3.5.1")
                 implementation("com.aallam.ktoken:ktoken:0.3.0")
 
+                implementation("de.kherud:llama:2.2.1")
+
                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")
 
                 val ktorVersion = "2.3.6"

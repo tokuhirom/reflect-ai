@@ -18,8 +18,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import reflectai.ConfigRepository
+import reflectai.engine.ModelRepository
 import reflectai.model.Config
-import reflectai.model.aiModels
 import java.text.NumberFormat
 
 @Composable
@@ -27,13 +27,14 @@ fun HeaderComponent(
     chatViewModel: ChatViewModel,
     config: Config,
     configRepository: ConfigRepository,
-    numberFormat: NumberFormat
+    numberFormat: NumberFormat,
+    modelRepositories: List<ModelRepository>,
 ) {
     Row {
         var expanded by remember { mutableStateOf(false) }
         Box(modifier = Modifier.fillMaxWidth().wrapContentSize(Alignment.TopStart)) {
             Text(
-                chatViewModel.targetAiModel.name + " (${chatViewModel.targetAiModel.maxTokens} max tokens)",
+                chatViewModel.targetAiModel.getLabel(numberFormat),
                 modifier = Modifier.fillMaxWidth().clickable(onClick = { expanded = true }).background(
                     Color.Gray
                 )
@@ -43,14 +44,16 @@ fun HeaderComponent(
                 onDismissRequest = { expanded = false },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                aiModels.forEach { aiModel ->
+                modelRepositories.flatMap { it.getModels() }.forEach { aiModel ->
                     DropdownMenuItem(onClick = {
                         chatViewModel.targetAiModel = aiModel
                         expanded = false
                         config.defaultModelName = aiModel.name
                         configRepository.saveSettings(config)
                     }) {
-                        Text(text = aiModel.name + " (" + numberFormat.format(aiModel.maxTokens) + " max tokens)")
+                        Text(
+                            text = aiModel.getLabel(numberFormat)
+                        )
                     }
                 }
             }

@@ -1,12 +1,9 @@
 package reflectai.ui
 
-import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.SnackbarHost
 import androidx.compose.material.SnackbarHostState
@@ -15,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import reflectai.ConfigRepository
+import reflectai.engine.ModelRepository
 import reflectai.feature.FunctionRepository
 import java.text.NumberFormat
 import java.time.ZoneId
@@ -27,6 +25,7 @@ fun App(
     configRepository: ConfigRepository,
     funcitonRepository: FunctionRepository,
     chatViewModel: ChatViewModel,
+    modelRepositories: List<ModelRepository>,
 ) {
     val config = configRepository.loadSettings()
     val numberFormat = NumberFormat.getNumberInstance(Locale.getDefault())
@@ -34,7 +33,7 @@ fun App(
 
     MaterialTheme {
         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-            HeaderComponent(chatViewModel, config, configRepository, numberFormat)
+            HeaderComponent(chatViewModel, config, configRepository, numberFormat, modelRepositories)
 
             val snackbarHostState = SnackbarHostState()
             SnackbarHost(hostState = snackbarHostState)
