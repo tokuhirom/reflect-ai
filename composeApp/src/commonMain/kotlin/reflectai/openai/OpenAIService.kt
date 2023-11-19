@@ -1,4 +1,4 @@
-package reflectai.chatgpt
+package reflectai.openai
 
 import com.aallam.ktoken.Tokenizer
 import com.aallam.openai.api.chat.ChatCompletionChunk
@@ -33,7 +33,7 @@ data class FunctionChatCompletionStreamItem(
     val chatMessage: ChatMessage
 ) : ChatCompletionStreamItem()
 
-class ChatGPTService(
+class OpenAIService(
     private val functionRepository: FunctionRepository,
     private val configRepository: ConfigRepository,
     private val openaiProvider: () -> OpenAI

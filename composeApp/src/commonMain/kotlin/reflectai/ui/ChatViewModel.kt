@@ -11,16 +11,16 @@ import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 import reflectai.ChatLogRepository
 import reflectai.ConfigRepository
-import reflectai.chatgpt.ChatGPTService
-import reflectai.chatgpt.FunctionChatCompletionStreamItem
-import reflectai.chatgpt.StringChatCompletionStreamItem
+import reflectai.openai.OpenAIService
+import reflectai.openai.FunctionChatCompletionStreamItem
+import reflectai.openai.StringChatCompletionStreamItem
 import reflectai.model.AIModel
 import reflectai.model.ChatLogMessage
 import reflectai.model.ChatLogRole
 import reflectai.model.aiModels
 
 class ChatViewModel(
-    private val chatGPTService: ChatGPTService,
+    private val openAIService: OpenAIService,
     private val chatLogRepository: ChatLogRepository,
     private val configRepository: ConfigRepository,
 ) {
@@ -59,7 +59,7 @@ class ChatViewModel(
                 }
 
                 try {
-                    chatGPTService.sendMessage(
+                    openAIService.sendMessage(
                         targetAiModel,
                         conversation.toList()
                             .filter { it.role != ChatLogRole.Error }

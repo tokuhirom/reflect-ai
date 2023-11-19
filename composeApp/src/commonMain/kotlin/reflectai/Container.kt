@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.ktor.client.plugins.logging.*
-import reflectai.chatgpt.ChatGPTService
+import reflectai.openai.OpenAIService
 import reflectai.feature.FunctionRepository
 import reflectai.feature.fetchurl.FetchURLFunction
 import reflectai.feature.googlesearch.GoogleSearchFunction
@@ -44,7 +44,7 @@ class Container {
         val apiToken = configRepository.loadSettings().apiToken
         OpenAI(apiToken)
     }
-    val chatGPTService = ChatGPTService(functionRepository, configRepository, openaiProvider)
+    val openAIService = OpenAIService(functionRepository, configRepository, openaiProvider)
 
-    val chatViewModel = ChatViewModel(chatGPTService, chatLogRepository, configRepository)
+    val chatViewModel = ChatViewModel(openAIService, chatLogRepository, configRepository)
 }
