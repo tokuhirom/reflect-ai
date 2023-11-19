@@ -23,7 +23,7 @@ import reflectai.model.Config
 @Composable
 fun ConfigurationDialog(
     config: Config,
-    onSave: (String, String, String, String) -> Unit,
+    onSave: (String, String?, String, String) -> Unit,
     onDialogClose: () -> Unit
 ) {
     var prompt by remember { mutableStateOf(config.prompt) }
@@ -42,7 +42,7 @@ fun ConfigurationDialog(
         ) {
             Text("OpenAI API token:")
             TextField(
-                value = openAIApiToken,
+                value = openAIApiToken ?: "",
                 onValueChange = {
                     openAIApiToken = it
                 }

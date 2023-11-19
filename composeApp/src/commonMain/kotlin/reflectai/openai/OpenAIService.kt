@@ -6,7 +6,6 @@ import com.aallam.openai.api.chat.ChatCompletionRequest
 import com.aallam.openai.api.chat.ChatMessage
 import com.aallam.openai.api.chat.ChatRole
 import com.aallam.openai.api.chat.FunctionMode
-import com.aallam.openai.client.OpenAI
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
@@ -33,10 +32,14 @@ data class FunctionChatCompletionStreamItem(
     val chatMessage: ChatMessage
 ) : ChatCompletionStreamItem()
 
+data class ErrorChatCompletionStreamItem(
+    val message: String
+) : ChatCompletionStreamItem()
+
 class OpenAIService(
     private val functionRepository: FunctionRepository,
     private val configRepository: ConfigRepository,
-    private val openaiProvider: () -> OpenAI
+    private val openaiProvider: OpenAIProvider
 ) {
     private val logger = LoggerFactory.getLogger(javaClass)
 
@@ -45,7 +48,13 @@ class OpenAIService(
         messages: List<ChatMessage>,
         progressUpdate: (String) -> Unit,
     ): Flow<ChatCompletionStreamItem> {
-        val openai = openaiProvider()
+        if (!openaiProvider.isAvailable()) {
+            return flowOf(
+                ErrorChatCompletionStreamItem("OpenAI token is not available")
+            )
+        }
+
+        val openai = openaiProvider.get()
         val config = configRepository.loadSettings()
         val prompt = config.prompt
 

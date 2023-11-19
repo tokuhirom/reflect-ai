@@ -15,6 +15,7 @@ import reflectai.feature.imagegen.ImageRepository
 import reflectai.feature.termdefinition.FetchTermDefinitionFunction
 import reflectai.feature.termdefinition.RegisterTermDefinitionFunction
 import reflectai.feature.termdefinition.TermDefinitionRepository
+import reflectai.openai.OpenAIProvider
 import reflectai.ui.ChatViewModel
 import java.time.ZoneId
 
@@ -40,10 +41,7 @@ class Container {
             ImageGenFunction(objectMapper, configRepository, ImageRepository(configRepository)),
         )
     )
-    val openaiProvider: () -> OpenAI = {
-        val apiToken = configRepository.loadSettings().apiToken
-        OpenAI(apiToken)
-    }
+    private val openaiProvider = OpenAIProvider(configRepository)
     val openAIService = OpenAIService(functionRepository, configRepository, openaiProvider)
 
     val chatViewModel = ChatViewModel(openAIService, chatLogRepository, configRepository)

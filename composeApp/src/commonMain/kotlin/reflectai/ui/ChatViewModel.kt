@@ -11,20 +11,21 @@ import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 import reflectai.ChatLogRepository
 import reflectai.ConfigRepository
-import reflectai.openai.OpenAIService
-import reflectai.openai.FunctionChatCompletionStreamItem
-import reflectai.openai.StringChatCompletionStreamItem
 import reflectai.model.AIModel
 import reflectai.model.ChatLogMessage
 import reflectai.model.ChatLogRole
 import reflectai.model.aiModels
+import reflectai.openai.ErrorChatCompletionStreamItem
+import reflectai.openai.FunctionChatCompletionStreamItem
+import reflectai.openai.OpenAIService
+import reflectai.openai.StringChatCompletionStreamItem
 
 class ChatViewModel(
     private val openAIService: OpenAIService,
     private val chatLogRepository: ChatLogRepository,
     private val configRepository: ConfigRepository,
 ) {
-    val logger = LoggerFactory.getLogger(javaClass)
+    private val logger = LoggerFactory.getLogger(javaClass)
     private val initialConversation = chatLogRepository.loadConversations().logs
 
     var message by mutableStateOf(TextFieldValue(""))
@@ -81,6 +82,10 @@ class ChatViewModel(
                                     ChatLogRole.Function,
                                     item.chatMessage.content!!,
                                     name = item.chatMessage.name)  + current
+                            }
+
+                            is ErrorChatCompletionStreamItem -> {
+                                updateMessage(item.message, ChatLogRole.Error, true)
                             }
                         }
                         chatLogRepository.saveConversations(conversation)

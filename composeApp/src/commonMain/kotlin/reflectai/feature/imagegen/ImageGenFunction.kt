@@ -1,6 +1,5 @@
 package reflectai.feature.imagegen
 
-import reflectai.ConfigRepository
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.PointerMatcher
@@ -20,8 +19,6 @@ import com.aallam.openai.api.image.imageCreation
 import com.aallam.openai.client.OpenAI
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import reflectai.feature.OpenAIFunction
-import reflectai.feature.RendableFunction
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -29,8 +26,11 @@ import kotlinx.serialization.json.add
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
 import kotlinx.serialization.json.putJsonObject
-import reflectai.model.ChatLogMessage
 import org.slf4j.LoggerFactory
+import reflectai.ConfigRepository
+import reflectai.feature.OpenAIFunction
+import reflectai.feature.RendableFunction
+import reflectai.model.ChatLogMessage
 import java.awt.Toolkit
 import java.awt.datatransfer.DataFlavor
 import java.awt.datatransfer.Transferable
@@ -91,7 +91,7 @@ class ImageGenFunction(private val objectMapper: ObjectMapper, private val confi
         val args = objectMapper.readValue<ImageGenArgument>(argumentJson)
 
         val apiToken = configRepository.loadSettings().apiToken
-        val openai = OpenAI(apiToken)
+        val openai = OpenAI(apiToken!!)
         val images = openai.imageJSON(
             imageCreation {
                 prompt = args.prompt
