@@ -4,6 +4,9 @@
 
 This is a free and open source personal assistant software based on AI technology.
 
+<img width="979" alt="image" src="https://github.com/tokuhirom/reflect-ai/assets/21084/ae5df307-97fd-47a8-bd00-73ab992b7f77">
+
+
 ## Supported platforms
 
  * Mac OS X Ventura or later
