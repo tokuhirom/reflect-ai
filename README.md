@@ -6,16 +6,20 @@ This is a free and open source personal assistant software based on AI technolog
 
 <img width="979" alt="image" src="https://github.com/tokuhirom/reflect-ai/assets/21084/ae5df307-97fd-47a8-bd00-73ab992b7f77">
 
+## Features
+
+ * Talk with OpenAI GPT-3/GPT-4
+ * Builtin functions to support Function Calling.
+   * Google search
+   * Image generation based on DALL-E-2
+   * Fetch content via URL
 
 ## Supported platforms
 
  * Mac OS X Ventura or later
+ * Java 17+
 
 Maybe it can run on Windows or Linux, but I haven't tested it.
-
-## Dependencies
-
- * Java 17+
 
 ## How to run
 
