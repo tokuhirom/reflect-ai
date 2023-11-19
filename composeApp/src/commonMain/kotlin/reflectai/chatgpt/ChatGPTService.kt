@@ -102,6 +102,7 @@ class ChatGPTService(
             }
 
             if (function != null && function.dontSendToOpenAIAgain()) {
+                logger.info("Don't send to OpenAI again: ${funcall.name}")
                 return flowOf(FunctionChatCompletionStreamItem(funcallMsg))
             }
 
