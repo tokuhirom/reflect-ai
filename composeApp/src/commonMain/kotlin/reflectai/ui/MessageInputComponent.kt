@@ -39,7 +39,7 @@ fun MessageInputComponent(chatViewModel: ChatViewModel) {
         Button(onClick = {
             chatViewModel.sendMessage()
         }) {
-            Text("POST")
+            Text("Submit")
         }
     }
 }
