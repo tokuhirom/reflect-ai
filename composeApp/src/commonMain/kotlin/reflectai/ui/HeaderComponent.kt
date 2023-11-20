@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.material.Divider
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Text
@@ -44,16 +45,22 @@ fun HeaderComponent(
                 onDismissRequest = { expanded = false },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                modelRepositories.flatMap { it.getModels() }.forEach { aiModel ->
-                    DropdownMenuItem(onClick = {
-                        chatViewModel.targetAiModel = aiModel
-                        expanded = false
-                        config.defaultModelName = aiModel.name
-                        configRepository.saveSettings(config)
-                    }) {
-                        Text(
-                            text = aiModel.getLabel(numberFormat)
-                        )
+                modelRepositories.forEachIndexed { index, modelRepository ->
+                    modelRepository.getModels().forEach { aiModel ->
+                        DropdownMenuItem(onClick = {
+                            chatViewModel.targetAiModel = aiModel
+                            expanded = false
+                            config.defaultModelName = aiModel.name
+                            configRepository.saveSettings(config)
+                        }) {
+                            Text(
+                                text = aiModel.getLabel(numberFormat)
+                            )
+                        }
+                    }
+
+                    if (index != modelRepositories.size-1) {
+                        Divider()
                     }
                 }
             }
