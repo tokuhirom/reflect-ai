@@ -1,4 +1,4 @@
-package reflectai
+package reflectai.markdown
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString

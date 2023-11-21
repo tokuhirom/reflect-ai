@@ -1,4 +1,4 @@
-package reflectai
+package reflectai.markdown
 
 enum class MarkdownBlocKType {
     TEXT,
