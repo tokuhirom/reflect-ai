@@ -27,7 +27,9 @@ fun MessageInputComponent(chatViewModel: ChatViewModel) {
                     when {
                         // Enterのみが押された場合、メッセージを送信
                         keyEvent.key == Key.Enter && keyEvent.isMetaPressed -> {
-                            chatViewModel.sendMessage()
+                            if (chatViewModel.message.text.isNotEmpty()) {
+                                chatViewModel.sendMessage()
+                            }
                             true
                         }
 
@@ -37,7 +39,9 @@ fun MessageInputComponent(chatViewModel: ChatViewModel) {
         )
 
         Button(onClick = {
-            chatViewModel.sendMessage()
+            if (chatViewModel.message.text.isNotEmpty()) {
+                chatViewModel.sendMessage()
+            }
         }) {
             Text("Submit")
         }
