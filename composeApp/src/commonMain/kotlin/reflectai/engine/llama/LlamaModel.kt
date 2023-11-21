@@ -16,6 +16,10 @@ data class LlamaModel(val modelPath: String, override val name: String) : AIMode
     override fun getLabel(numberFormat: NumberFormat): String {
         return name
     }
+
+    override fun countToken(text: String): Int {
+        throw NotImplementedError("countToken is not implemented")
+    }
 }
 
 class LlamaModelRepository(private val configRepository: ConfigRepository) : ModelRepository {

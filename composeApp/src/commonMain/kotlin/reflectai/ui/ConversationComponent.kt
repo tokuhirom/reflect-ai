@@ -109,6 +109,15 @@ fun ColumnScope.ConversationComponent(
                         )
                         Spacer(modifier = Modifier.weight(1f))
 
+                        if (chatViewModel.targetAiModel.countTokenAvailable()) {
+                            Text(text = "${chatViewModel.targetAiModel.countToken(item.message)} token",
+                                modifier = Modifier.padding(end = 8.dp),
+                                style = TextStyle(
+                                    color = Color.Gray,
+                                    fontSize = 12.sp
+                                ))
+                        }
+
                         Text(text = "Copy", modifier = Modifier.onClick {
                             val clipboard: Clipboard = Toolkit.getDefaultToolkit().systemClipboard
                             val stringSelection = StringSelection(item.message)

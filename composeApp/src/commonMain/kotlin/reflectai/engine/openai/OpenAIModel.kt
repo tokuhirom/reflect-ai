@@ -31,10 +31,16 @@ data class OpenAIModel(override val name: String, val maxTokens: Int) : AIModel 
     override val type: AIModelType
         get() = AIModelType.OPENAI
 
-    val tokenizer = runBlocking {
+    private val tokenizer = runBlocking {
         Tokenizer.of(model = name, loader = LocalPbeLoader(FileSystem.RESOURCES))
     }
     val modelId = ModelId(name)
+
+    override fun countTokenAvailable(): Boolean = true
+
+    override fun countToken(text: String): Int {
+        return tokenizer.encode(text).size
+    }
 
     override fun getLabel(numberFormat: NumberFormat): String {
         return name + " (${maxTokens} max tokens)"

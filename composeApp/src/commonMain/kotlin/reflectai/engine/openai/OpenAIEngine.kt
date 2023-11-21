@@ -1,6 +1,5 @@
 package reflectai.engine.openai
 
-import com.aallam.ktoken.Tokenizer
 import com.aallam.openai.api.chat.ChatCompletionChunk
 import com.aallam.openai.api.chat.ChatCompletionRequest
 import com.aallam.openai.api.chat.ChatMessage
@@ -50,9 +49,8 @@ class OpenAIEngine(
         // gpt-3.5-turbo is max 4,097 tokens.
         // we must take 500 tokens for response.
         // https://platform.openai.com/docs/models/gpt-3-5
-        val tokenizer = openAiModel.tokenizer
-        val remainTokens = openAiModel.maxTokens - tokenizer.encode(prompt).size - (openAiModel.maxTokens / 8)
-        val usingMessages = getMessagesByTokenCount(messages, tokenizer, remainTokens)
+        val remainTokens = openAiModel.maxTokens - openAiModel.countToken(prompt) - (openAiModel.maxTokens / 8)
+        val usingMessages = getMessagesByTokenCount(messages, openAiModel, remainTokens)
 
         println("Using model: ${openAiModel.name}")
         progressUpdate("Calling OpenAPI: ${openAiModel.name}(using ${usingMessages.size} messages)")
@@ -84,7 +82,7 @@ class OpenAIEngine(
             val funcallMsg = try {
                 function?.callFunction(
                     argument,
-                    remainTokens - tokenizer.encode(messages.last().content!!).size
+                    remainTokens - openAiModel.countToken(messages.last().content!!)
                 ) ?: ChatMessage(
                     role = ChatRole.Function,
                     name = funcall.name,
@@ -109,8 +107,8 @@ class OpenAIEngine(
             val usingMessages2 =
                 getMessagesByTokenCount(
                     messages,
-                    tokenizer,
-                    remainTokens - tokenizer.encode(funcallMsg.content!!).size
+                    openAiModel,
+                    remainTokens - openAiModel.countToken(funcallMsg.content!!)
                 )
             val chatCompletionChunkFlow = openai.chatCompletions(
                 ChatCompletionRequest(
@@ -141,13 +139,13 @@ class OpenAIEngine(
 
     private fun getMessagesByTokenCount(
         messages: List<ChatMessage>,
-        tokenizer: Tokenizer,
+        aiModel: OpenAIModel,
         remainTokens: Int
     ): List<ChatMessage> {
         var remainTokens1 = remainTokens
         val usingMessages = mutableListOf<ChatMessage>()
         for (chatMessage in messages.reversed()) {
-            val tokens = tokenizer.encode(chatMessage.content!!).size
+            val tokens = aiModel.countToken(chatMessage.content!!)
             if (remainTokens1 < tokens) {
                 break
             }
