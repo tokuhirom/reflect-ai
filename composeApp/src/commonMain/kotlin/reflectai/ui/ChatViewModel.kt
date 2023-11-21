@@ -65,32 +65,7 @@ class ChatViewModel(
             }
 
             try {
-                val result= when (targetAiModel) {
-                    is OpenAIModel -> {
-                        openAIEngine.generate(
-                            targetAiModel as OpenAIModel,
-                            conversation.toList()
-                                .filter { it.role != ChatLogRole.Error }
-                                .map { it.toChatMessage() },
-                        ) {
-                            progressIndicator = TextFieldValue(it)
-                        }
-                    }
-                    is LlamaModel -> {
-                        llamaEngine.generate(
-                            targetAiModel.name,
-                            conversation.toList()
-                                .filter { it.role != ChatLogRole.Error }
-                                .map { it.toChatMessage() }
-                                .takeLast(1),
-                        ) {
-                            progressIndicator = TextFieldValue(it)
-                        }
-                    }
-                    else -> {
-                        throw Exception("Unknown AI model: $targetAiModel")
-                    }
-                }
+                val result= callEngine()
 
                 result.onCompletion {
                     println("chatCompletions complete.")
@@ -124,6 +99,35 @@ class ChatViewModel(
                 }, ChatLogRole.Error)
                 chatLogRepository.saveConversations(conversation)
             }
+        }
+    }
+
+    private suspend fun callEngine() = when (targetAiModel) {
+        is OpenAIModel -> {
+            openAIEngine.generate(
+                targetAiModel as OpenAIModel,
+                conversation.toList()
+                    .filter { it.role != ChatLogRole.Error }
+                    .map { it.toChatMessage() },
+            ) {
+                progressIndicator = TextFieldValue(it)
+            }
+        }
+
+        is LlamaModel -> {
+            llamaEngine.generate(
+                targetAiModel.name,
+                conversation.toList()
+                    .filter { it.role != ChatLogRole.Error }
+                    .map { it.toChatMessage() }
+                    .takeLast(1),
+            ) {
+                progressIndicator = TextFieldValue(it)
+            }
+        }
+
+        else -> {
+            throw Exception("Unknown AI model: $targetAiModel")
         }
     }
 }
