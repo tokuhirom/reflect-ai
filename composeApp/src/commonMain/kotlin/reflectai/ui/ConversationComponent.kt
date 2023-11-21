@@ -110,7 +110,7 @@ fun ColumnScope.ConversationComponent(
                         Spacer(modifier = Modifier.weight(1f))
 
                         if (chatViewModel.targetAiModel.countTokenAvailable()) {
-                            Text(text = "${chatViewModel.targetAiModel.countToken(item.message)} token",
+                            Text(text = "${chatViewModel.targetAiModel.countToken(item.message)} tokens",
                                 modifier = Modifier.padding(end = 8.dp),
                                 style = TextStyle(
                                     color = Color.Gray,
