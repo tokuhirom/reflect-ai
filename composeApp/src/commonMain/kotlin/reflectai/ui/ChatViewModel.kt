@@ -83,7 +83,6 @@ class ChatViewModel(
                             current = updateMessage(current, item.message, ChatLogRole.Error, true)
                         }
                     }
-                    chatLogRepository.saveConversations(conversation)
                 }
             } catch (e: Exception) {
                 logger.error("Got an error : $e", e)
