@@ -7,7 +7,7 @@ enum class AIModelType {
     LLAMA
 }
 
-sealed interface AIModel {
+interface AIModel {
     val type: AIModelType
     val name: String
     fun getLabel(numberFormat: NumberFormat): String
