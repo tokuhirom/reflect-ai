@@ -28,7 +28,9 @@ class Container {
         .registerModule(JavaTimeModule())
         .enable(SerializationFeature.INDENT_OUTPUT)
     val configRepository = ConfigRepository()
-    private val chatLogRepository = ChatLogRepository(objectMapper, zoneId, configRepository)
+    private val openaiProvider = OpenAIProvider(configRepository)
+    private val similarSearchRepository = SimilarSearchRepository(objectMapper, configRepository, openaiProvider)
+    private val chatLogRepository = ChatLogRepository(objectMapper, zoneId, configRepository, similarSearchRepository)
     private val ktorClient = io.ktor.client.HttpClient() {
         install(Logging)
     }
@@ -43,7 +45,6 @@ class Container {
             ImageGenFunction(objectMapper, configRepository, ImageRepository(configRepository)),
         )
     )
-    private val openaiProvider = OpenAIProvider(configRepository)
     val openAIEngine = OpenAIEngine(functionRepository, configRepository, openaiProvider)
 
     val llamaModelRepository = LlamaModelRepository(configRepository)

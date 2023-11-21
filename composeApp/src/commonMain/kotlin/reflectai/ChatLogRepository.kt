@@ -1,9 +1,9 @@
 package reflectai
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import org.slf4j.LoggerFactory
 import reflectai.model.ChatLog
 import reflectai.model.ChatLogMessage
-import org.slf4j.LoggerFactory
 import reflectai.ui.showAlert
 import java.nio.file.Files
 import java.time.Instant
@@ -11,10 +11,10 @@ import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZonedDateTime
 
-class ChatLogRepository(private val objectMapper: ObjectMapper, private val zoneId: ZoneId, private val configRepository: ConfigRepository) {
+class ChatLogRepository(private val objectMapper: ObjectMapper, private val zoneId: ZoneId, private val configRepository: ConfigRepository, private val similarSearchRepository: SimilarSearchRepository) {
     private val logger = LoggerFactory.getLogger(javaClass)
 
-    fun saveConversations(logs: List<ChatLogMessage>, targetTime: Instant = Instant.now()) {
+    suspend fun saveConversations(logs: List<ChatLogMessage>, targetTime: Instant = Instant.now()) {
         val targetDateTime = targetTime.atZone(zoneId)
         val dateStr = targetDate(targetDateTime).toString()
         val directoryPath = configRepository.loadSettings().dataDirectoryPath
@@ -41,6 +41,8 @@ class ChatLogRepository(private val objectMapper: ObjectMapper, private val zone
 
         // 対話をJSON形式でファイルに保存
         Files.write(filePath, json)
+
+        similarSearchRepository.update(logs)
     }
 
     fun loadConversations(date: LocalDate = targetDate(ZonedDateTime.now())): ChatLog {

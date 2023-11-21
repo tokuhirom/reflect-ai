@@ -14,6 +14,7 @@ data class Config(
     var apiToken: String? = null,
     var googleSearchConfig : GoogleSearchConfig = GoogleSearchConfig(),
     val dataDirectory: String = Paths.get(System.getProperty("user.home"), "ReflectAI").toString(),
+    val embeddingsModelId: String = "text-embeddings-v1",
 ) {
     @get:JsonIgnore
     val dataDirectoryPath: Path
