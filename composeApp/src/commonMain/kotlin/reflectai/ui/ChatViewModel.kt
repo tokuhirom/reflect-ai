@@ -53,28 +53,23 @@ class ChatViewModel(
             var current = ChatLogMessage(ChatLogRole.AI, "", inProgress = true)
             conversation += current
 
-            fun updateMessage(msg: String, role: ChatLogRole, inProgress: Boolean = false) {
-                current = ChatLogMessage(
-                    role,
-                    current.message + msg,
-                    current.id,
-                    inProgress = inProgress,
-                    timestamp = current.timestamp
-                )
-                conversation = conversation.filter { it.id != current.id } + current
-            }
-
             try {
                 val result= callEngine()
 
                 result.onCompletion {
                     println("chatCompletions complete.")
-                    updateMessage("", ChatLogRole.AI, false)
+                    if (current.message.isEmpty()) {
+                        // remove current message if it is empty.
+                        // When call gen_image, it returns empty message.
+                        conversation = conversation.filter { it.id != current.id }
+                    } else {
+                        current = updateMessage(current, "", ChatLogRole.AI, false)
+                    }
                     chatLogRepository.saveConversations(conversation)
                 }.collect {item ->
                     when (item) {
                         is StringChatCompletionStreamItem -> {
-                            updateMessage(item.content, ChatLogRole.AI, true)
+                            current = updateMessage(current, item.content, ChatLogRole.AI, true)
                         }
 
                         is FunctionChatCompletionStreamItem -> {
@@ -85,14 +80,14 @@ class ChatViewModel(
                         }
 
                         is ErrorChatCompletionStreamItem -> {
-                            updateMessage(item.message, ChatLogRole.Error, true)
+                            current = updateMessage(current, item.message, ChatLogRole.Error, true)
                         }
                     }
                     chatLogRepository.saveConversations(conversation)
                 }
             } catch (e: Exception) {
                 logger.error("Got an error : $e", e)
-                updateMessage(if (e.message != null) {
+                current = updateMessage(current, if (e.message != null) {
                     "${e.javaClass.canonicalName} ${e.message}"
                 } else {
                     "Got an error : $e"
@@ -100,6 +95,18 @@ class ChatViewModel(
                 chatLogRepository.saveConversations(conversation)
             }
         }
+    }
+
+    private fun updateMessage(current: ChatLogMessage, msg: String, role: ChatLogRole, inProgress: Boolean = false): ChatLogMessage {
+        val next = ChatLogMessage(
+            role,
+            current.message + msg,
+            current.id,
+            inProgress = inProgress,
+            timestamp = current.timestamp
+        )
+        conversation = conversation.filter { it.id != current.id } + next
+        return next
     }
 
     private suspend fun callEngine() = when (targetAiModel) {
