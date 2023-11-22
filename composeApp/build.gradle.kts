@@ -20,7 +20,7 @@ kotlin {
             dependencies {
                 implementation(compose.desktop.currentOs)
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.7.3")
-                implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.3")
+                implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.16.0")
             }
         }
         val commonMain by getting {
@@ -50,7 +50,7 @@ kotlin {
                 implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
                 implementation("io.ktor:ktor-client-logging:$ktorVersion")
 
-                implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.3")
+                implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.16.0")
                 implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.16.0")
             }
         }
