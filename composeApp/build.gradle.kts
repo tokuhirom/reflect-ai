@@ -64,8 +64,12 @@ compose.desktop {
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "ai.reflect"
+            packageName = "reflectai"
             packageVersion = "1.0.0"
+
+            macOS {
+                iconFile.set(project.file("icon.icns"))
+            }
         }
     }
 }

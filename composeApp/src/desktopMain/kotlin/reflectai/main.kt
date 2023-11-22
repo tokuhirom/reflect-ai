@@ -8,9 +8,13 @@ import androidx.compose.ui.input.key.KeyShortcut
 import androidx.compose.ui.window.MenuBar
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import androidx.compose.ui.window.rememberWindowState
 import de.kherud.llama.LlamaModel
+import org.jetbrains.compose.resources.ExperimentalResourceApi
+import org.jetbrains.compose.resources.painterResource
 import reflectai.ui.App
 
+@OptIn(ExperimentalResourceApi::class)
 fun main() = application {
     val container = Container()
     val config = container.configRepository.loadSettings()
@@ -21,7 +25,12 @@ fun main() = application {
         println("[$level] $message")
     }
 
-    Window(onCloseRequest = ::exitApplication, title = "ReflectAI") {
+    Window(
+        onCloseRequest = ::exitApplication,
+        title = "ReflectAI",
+        state = rememberWindowState(),
+        icon = painterResource("icons/icon.png"),
+    ) {
         App(
             container.zoneId,
             container.configRepository,
