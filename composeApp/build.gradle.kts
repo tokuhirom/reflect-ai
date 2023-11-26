@@ -35,7 +35,7 @@ kotlin {
                 implementation("org.jsoup:jsoup:1.16.2")
 
                 implementation("ch.qos.logback:logback-classic:1.4.11")
-                implementation("com.aallam.openai:openai-client:3.5.1")
+                implementation("com.aallam.openai:openai-client:3.6.1")
                 implementation("com.aallam.ktoken:ktoken:0.3.0")
 
                 implementation("de.kherud:llama:2.2.1")
