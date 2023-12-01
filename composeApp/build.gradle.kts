@@ -40,7 +40,7 @@ kotlin {
 
                 implementation("de.kherud:llama:2.2.1")
 
-                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0")
 
                 val ktorVersion = "2.3.6"
                 implementation("io.ktor:ktor-client-core:$ktorVersion")
