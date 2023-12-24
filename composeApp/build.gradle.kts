@@ -51,7 +51,7 @@ kotlin {
                 implementation("io.ktor:ktor-client-logging:$ktorVersion")
 
                 implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.16.1")
-                implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.16.0")
+                implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.16.1")
             }
         }
     }
