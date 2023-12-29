@@ -32,7 +32,7 @@ kotlin {
                 implementation(compose.components.resources)
 
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
-                implementation("org.jsoup:jsoup:1.17.1")
+                implementation("org.jsoup:jsoup:1.17.2")
 
                 implementation("ch.qos.logback:logback-classic:1.4.14")
                 implementation("com.aallam.openai:openai-client:3.6.2")
