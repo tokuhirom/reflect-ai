@@ -38,7 +38,7 @@ kotlin {
                 implementation("com.aallam.openai:openai-client:3.6.2")
                 implementation("com.aallam.ktoken:ktoken:0.3.0")
 
-                implementation("de.kherud:llama:2.2.1")
+                implementation("de.kherud:llama:2.3.2")
 
                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0")
 
