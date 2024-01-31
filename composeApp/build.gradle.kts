@@ -42,7 +42,7 @@ kotlin {
 
                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0")
 
-                val ktorVersion = "2.3.7"
+                val ktorVersion = "2.3.8"
                 implementation("io.ktor:ktor-client-core:$ktorVersion")
                 implementation("io.ktor:ktor-client-cio:$ktorVersion")
                 implementation("io.ktor:ktor-client-serialization:$ktorVersion")
