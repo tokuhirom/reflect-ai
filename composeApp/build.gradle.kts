@@ -34,7 +34,7 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
                 implementation("org.jsoup:jsoup:1.17.2")
 
-                implementation("ch.qos.logback:logback-classic:1.5.3")
+                implementation("ch.qos.logback:logback-classic:1.5.4")
                 implementation("com.aallam.openai:openai-client:3.7.1")
                 implementation("com.aallam.ktoken:ktoken:0.3.0")
 
